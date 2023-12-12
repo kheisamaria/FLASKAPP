@@ -4,17 +4,12 @@ from flask_mysqldb import MySQL
 # the rest of the imports are the same as before
 from flask import Flask, render_template, url_for, flash, redirect
 from forms import RegistrationForm, LoginForm
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-
-# for security reasons, we need to set a secret key
-app.config["SECRET_KEY"] = "5791628bb0b13ce0c676dfde280ba245"
-
-# configure the database settings
-app.config["MYSQL_HOST"] = "localhost"
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "password"
-app.config["MYSQL_DB"] = "flaskblog"
+app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/flaskblog'
+db = SQLAlchemy(app)
 
 # create a MySQL object
 mysql = MySQL(app)
@@ -35,6 +30,13 @@ posts = [
 ]
 
 
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -46,15 +48,17 @@ def about():
     return render_template("about.html", title="About")
 
 
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    # to make sure the form is validated
     if form.validate_on_submit():
-        # to display a message to the user
-        flash(f"Account created for {form.username.data}!", "success")
-        return redirect(url_for("home"))
-    return render_template("register.html", title="Register", form=form)
+        user = User(username=form.username.data,
+                    email=form.email.data, password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Your account has been created! You are now able to log in', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
 
 
 @app.route("/login", methods=["GET", "POST"])

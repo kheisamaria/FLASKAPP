@@ -4,9 +4,10 @@ from flask_mysqldb import MySQL
 from users import create_user, get_users, get_user, update_user, delete_user
 from transactions import create_transaction, get_transactions, get_transaction, update_transaction, delete_transaction
 from savings import create_savings, get_savings, get_savings_entry, update_savings, delete_savings
-from expenses import create_expense, get_expenses, get_expense, update_expense, delete_expense  # Import expenses functions
+from expenses import create_expense, get_expenses, get_expense, update_expense, delete_expense
 from database import set_mysql
 from dotenv import load_dotenv
+from datetime import timedelta
 
 app = Flask(__name__)
 
@@ -19,16 +20,26 @@ app.config["MYSQL_PASSWORD"] = os.getenv("MYSQL_PASSWORD")
 app.config["MYSQL_DB"] = os.getenv("MYSQL_DB")
 # Extra configs, optional but mandatory for this project:
 app.config["MYSQL_CURSORCLASS"] = os.getenv("MYSQL_CURSORCLASS")
-app.config["MYSQL_AUTOCOMMIT"] = True if os.getenv("MYSQL_AUTOCOMMIT") == "true" else False
+app.config["MYSQL_AUTOCOMMIT"] = True if os.getenv(
+    "MYSQL_AUTOCOMMIT") == "true" else False
 
 mysql = MySQL(app)
 set_mysql(mysql)
+
+
+def convert_timedelta_to_str(value):
+    if isinstance(value, timedelta):
+        return str(value)
+    return value
+
 
 @app.route("/")
 def home():
     return jsonify({"message": "Hello, CSIT327!"})
 
 # User Routes
+
+
 @app.route("/users", methods=["GET", "POST"])
 def users():
     if request.method == "POST":
@@ -41,6 +52,7 @@ def users():
     else:
         users = get_users()
         return jsonify(users)
+
 
 @app.route("/users/<int:user_id>", methods=["GET", "PUT", "DELETE"])
 def user(user_id):
@@ -60,6 +72,8 @@ def user(user_id):
         return jsonify(user)
 
 # Transaction Routes
+
+
 @app.route("/transactions", methods=["GET", "POST"])
 def transactions():
     if request.method == "POST":
@@ -71,7 +85,14 @@ def transactions():
         return jsonify({"transaction_id": transaction_id})
     else:
         transactions = get_transactions()
+
+        # Convert timedelta to string in each transaction entry
+        for transaction in transactions:
+            for key, value in transaction.items():
+                transaction[key] = convert_timedelta_to_str(value)
+
         return jsonify(transactions)
+
 
 @app.route("/transactions/<int:transaction_id>", methods=["GET", "PUT", "DELETE"])
 def transaction(transaction_id):
@@ -87,10 +108,17 @@ def transaction(transaction_id):
         deleted_transaction_id = delete_transaction(transaction_id)
         return jsonify({"transaction_id": deleted_transaction_id})
     else:
-        transaction = get_transaction(transaction_id)
-        return jsonify(transaction)
+        transaction_entry = get_transaction(transaction_id)
+
+        # Convert timedelta to string in the transaction entry
+        for key, value in transaction_entry.items():
+            transaction_entry[key] = convert_timedelta_to_str(value)
+
+        return jsonify(transaction_entry)
 
 # Savings Routes
+
+
 @app.route("/savings", methods=["GET", "POST"])
 def savings():
     if request.method == "POST":
@@ -102,7 +130,14 @@ def savings():
         return jsonify({"savings_id": savings_id})
     else:
         savings_entries = get_savings()
+
+        # Convert timedelta to string in each savings entry
+        for savings_entry in savings_entries:
+            for key, value in savings_entry.items():
+                savings_entry[key] = convert_timedelta_to_str(value)
+
         return jsonify(savings_entries)
+
 
 @app.route("/savings/<int:savings_id>", methods=["GET", "PUT", "DELETE"])
 def savings_entry(savings_id):
@@ -119,9 +154,16 @@ def savings_entry(savings_id):
         return jsonify({"savings_id": deleted_savings_id})
     else:
         savings_entry = get_savings_entry(savings_id)
+
+        # Convert timedelta to string in the savings entry
+        for key, value in savings_entry.items():
+            savings_entry[key] = convert_timedelta_to_str(value)
+
         return jsonify(savings_entry)
 
 # Expenses Routes
+
+
 @app.route("/expenses", methods=["GET", "POST"])
 def expenses():
     if request.method == "POST":
@@ -134,6 +176,7 @@ def expenses():
     else:
         expenses_entries = get_expenses()
         return jsonify(expenses_entries)
+
 
 @app.route("/expenses/<int:expense_id>", methods=["GET", "PUT", "DELETE"])
 def expense(expense_id):
@@ -151,6 +194,7 @@ def expense(expense_id):
     else:
         expense_entry = get_expense(expense_id)
         return jsonify(expense_entry)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

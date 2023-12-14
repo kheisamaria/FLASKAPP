@@ -1,0 +1,102 @@
+@host=http://127.0.0.1:5000
+
+
+### Create users
+POST {{host}}/expenses
+Content-Type: application/json
+
+# {
+#   "full_name": "John Doe",
+#   "age": 25,
+#   "email": "john.doe@gmail.com",
+#   "username": "asdasd",
+#   "password": "asdasdasd",
+#   "balance":1000.00
+# }
+
+# {
+#   "full_name": "Jane Doe",
+#   "age": 25,
+#   "email": "jane.doe@gmail.com",
+#   "username": "test2",
+#   "password": "test2",
+#   "balance":1000.00
+# }
+
+# {
+#   "user_id": 1,
+#   "amount": 50.00,
+#   "description": "Grocery shopping",
+#   "date": "2023-12-15",
+#   "time": "08:30:00",
+#   "payment_method": "Credit Card"
+# }
+
+# {
+#       "user_id": 1,
+#       "amount": 500.00,
+#       "description": "Emergency Fund",
+#       "date": "2023-01-15",
+#       "time": "08:30:00",
+#       "category": "Emergency"
+# }
+
+{
+  "user_id": 1,
+  "amount": 50.00,
+  "description": "Groceries",
+  "frequency": "Monthly",
+  "paid": true
+}
+### Read all items
+GET {{host}}/users
+Content-Type: application/json
+
+
+### Read single item by id
+GET {{host}}/users/3
+Content-Type: application/json
+
+
+### Update an item
+PUT {{host}}/expenses/1
+Content-Type: application/json
+
+# {
+#   "full_name": "Test Doe",
+#   "age": 25,
+#   "email": "Test.doe@gmail.com",
+#   "username": "Test1",
+#   "password": "test1",
+#   "balance":1000.00
+# }
+
+# {
+#   "user_id": 1,
+#   "amount": 1000.00,
+#   "description": "Grocery shopee",
+#   "date": "2020-12-15",
+#   "time": "08:59:00",
+#   "payment_method": "Cash"
+# }
+
+# {
+#       "user_id": 1,
+#       "amount": 1000.00,
+#       "description": "Sanaall Fund",
+#       "date": "2023-01-15",
+#       "time": "08:45:00",
+#       "category": "Unexpected"
+# }
+
+
+{
+  "user_id": 1,
+  "amount": 150.00,
+  "description": "Groceries nalang",
+  "frequency": "Weekly",
+  "paid": false
+}
+### Delete an item
+DELETE {{host}}/expenses/2
+Content-Type: application/json

@@ -26,12 +26,12 @@ const NavBar = () => {
 				</div>
 				<div>
 					<Link to="/transactions" className="px-6">
-						<button className="h-12 w-28 hover:text-white">
+						<button className="h-12 w-28 hover:text-white mr-5">
 							Transactions
 						</button>
 					</Link>
 				</div>
-				<div className="h-8 flex items-center justify-center rounded-lg hover:bg-white pl-5">
+				<div className="h-8 flex items-center justify-center rounded-lg hover:bg-white">
 					<Link to="/">
 						<button className="h-12 w-24 text-base text-red-600 flex items-center justify-center">
 							Logout

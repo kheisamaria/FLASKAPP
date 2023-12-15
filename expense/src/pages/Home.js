@@ -9,7 +9,7 @@ function Home() {
 		<div className="bg-blue-950 h-screen w-screen">
 			<NavBar />
 
-			<div className=" h-[600px] w-full px-32 flex flex-row justify-center items-center gap-x-14">
+			<div className=" h-[650px] w-full px-32 flex flex-row justify-center items-center gap-x-14">
 				<div className="w-[550px] h-[550px] rounded-full bg-yellow-500 shadow-2xl border-6 border-blue-950 flex justify-center items-center">
 					<div className="h-full w-full flex flex-col justify-center items-center">
 						<div className=" h-20 w-full flex flex-row items-center justify-center font-bold text-7xl gap-x-1">

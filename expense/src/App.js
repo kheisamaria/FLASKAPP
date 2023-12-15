@@ -5,6 +5,9 @@ import Landing from "./pages/Landing.js";
 import Login from "./pages/Login.js";
 import Registration from "./pages/Registration";
 import Home from "./pages/Home";
+import Savings from "./pages/Savings";
+import Expenses from "./pages/Expenses.js";
+import Transactions from "./pages/Transactions.js";
 
 function App() {
 	return (
@@ -14,6 +17,9 @@ function App() {
 				<Route path="/login" element={<Login />} />
 				<Route path="/registration" element={<Registration />} />
 				<Route path="/home" element={<Home />} />
+				<Route path="/savings" element={<Savings />} />
+				<Route path="/expenses" element={<Expenses />} />
+				<Route path="/transactions" element={<Transactions />} />
 			</Routes>
 		</BrowserRouter>
 	);

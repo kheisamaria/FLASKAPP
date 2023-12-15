@@ -42,7 +42,7 @@ BEGIN
     UPDATE users
     SET full_name = p_full_name, age = p_age, email = p_email,
         username = p_username, password = p_password, balance = p_balance
-    WHERE user_id = p_user_id;  -- Change 'id' to 'user_id'
+    WHERE user_id = p_user_id;  
 
     SELECT p_user_id AS user_id;
 END //
@@ -52,7 +52,7 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE delete_user(IN p_user_id INT)
 BEGIN
-    DELETE FROM users WHERE user_id = p_user_id;  -- Change 'id' to 'user_id'
+    DELETE FROM users WHERE user_id = p_user_id; 
 
     SELECT p_user_id AS user_id;
 END //
@@ -60,9 +60,9 @@ DELIMITER ;
 
 
 
--- Table to store transactions
+-- Table to store transactions information
 CREATE TABLE transactions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
     description VARCHAR(255),
@@ -86,14 +86,14 @@ BEGIN
     INSERT INTO transactions (user_id, amount, description, date, time, payment_method)
     VALUES (p_user_id, p_amount, p_description, p_date, p_time, p_payment_method);
 
-    SELECT LAST_INSERT_ID() AS id;
+    SELECT LAST_INSERT_ID() AS transaction_id;
 END$$
 DELIMITER ;
 
 -- Procedure to update transaction information
 DELIMITER $$
 CREATE PROCEDURE update_transaction(
-    IN p_id INT,
+    IN p_transaction_id INT,
     IN p_user_id INT,
     IN p_amount DECIMAL(10, 2),
     IN p_description VARCHAR(255),
@@ -105,20 +105,32 @@ BEGIN
     UPDATE transactions
     SET user_id = p_user_id, amount = p_amount, description = p_description,
         date = p_date, time = p_time, payment_method = p_payment_method
-    WHERE id = p_id;
-    SELECT p_id AS id;
+    WHERE transaction_id = p_transaction_id;
+    SELECT p_transaction_id AS transaction_id;
 END$$
+DELIMITER ;
+
+-- Update the balance of the user after every transaction
+DELIMITER //
+CREATE TRIGGER after_insert_transaction
+AFTER INSERT ON transactions
+FOR EACH ROW
+BEGIN
+    DECLARE user_balance DECIMAL(10, 2);
+    SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+    UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
+END;
+//
 DELIMITER ;
 
 -- Procedure to delete a transaction
 DELIMITER $$
-CREATE PROCEDURE delete_transaction(IN p_id INT)
+CREATE PROCEDURE delete_transaction(IN p_transaction_id INT)
 BEGIN
-    DELETE FROM transactions WHERE id = p_id;
-    SELECT p_id AS id;
+    DELETE FROM transactions WHERE transaction_id = p_transaction_id;
+    SELECT p_transaction_id AS transaction_id;
 END$$
 DELIMITER ;
-
 
 -- View to get users with their transactions
 CREATE VIEW users_with_transactions AS
@@ -130,7 +142,7 @@ SELECT
     u.username,
     u.password,
     u.balance,
-    t.id AS transaction_id,
+    t.transaction_id,
     t.amount,
     t.description,
     t.date,
@@ -192,6 +204,19 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- Update the balance of the user after every savings entry
+DELIMITER //
+CREATE TRIGGER after_insert_savings
+AFTER INSERT ON savings
+FOR EACH ROW
+BEGIN
+    DECLARE user_balance DECIMAL(10, 2);
+    SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+    UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
+END;
+//
+DELIMITER ;
+
 -- Procedure to delete a savings entry
 DELIMITER $$
 CREATE PROCEDURE delete_savings(IN p_savings_id INT)
@@ -231,7 +256,7 @@ CREATE TABLE expenses (
     amount DECIMAL(10, 2) NOT NULL,
     description VARCHAR(255),
     frequency VARCHAR(255),
-    paid BOOLEAN NOT NULL DEFAULT 0, -- Assuming 0 represents not paid and 1 represents paid
+    paid BOOLEAN NOT NULL DEFAULT 0, 
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -270,6 +295,19 @@ BEGIN
 
     SELECT p_expense_id AS expense_id;
 END$$
+DELIMITER ;
+
+-- Update the balance of the user after every expense
+DELIMITER //
+CREATE TRIGGER after_insert_expense
+AFTER INSERT ON expenses
+FOR EACH ROW
+BEGIN
+    DECLARE user_balance DECIMAL(10, 2);
+    SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+    UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
+END;
+//
 DELIMITER ;
 
 -- Procedure to delete an expense

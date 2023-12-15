@@ -1,3 +1,9 @@
+:root {
+  --yellow-500: rgb(234, 179, 8);
+  --yellow-100: rgb(254, 249, 195);
+  --blue-950: rgb(23, 37, 84);
+}
+
 .App {
   text-align: center;
 }
@@ -41,3 +47,33 @@ body {
   --tw-bg-opacity: 1;
   background-color: rgb(23 37 84 / var(--tw-bg-opacity));
 }
+
+
+.table-container {
+  border: white 2px solid;
+  background-color: var(--yellow-100);
+  margin: auto;
+  border: 2px solid black;
+  width: 100%;
+  margin-top: 2px;
+  color: black;
+}
+
+.table-header th {
+  border: 2px solid var(--blue-950);
+  background-color: var(--yellow-500);
+  /* color: var(--yellow-500); */
+  color: black;
+  height: 60px;
+}
+
+.table-body tr {
+  height: 50px; 
+}
+
+.table-body td {
+  border: 2px solid var(--blue-950);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+

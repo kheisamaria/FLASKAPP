@@ -72,8 +72,6 @@ def user(user_id):
         return jsonify(user)
 
 # Transaction Routes
-
-
 @app.route("/transactions", methods=["GET", "POST"])
 def transactions():
     if request.method == "POST":
@@ -128,8 +126,6 @@ def transactions_by_user(user_id):
     return jsonify(transactions)
 
 # Savings Routes
-
-
 @app.route("/savings", methods=["GET", "POST"])
 def savings():
     if request.method == "POST":
@@ -185,8 +181,6 @@ def savings_by_user(user_id):
     return jsonify(savings_entries)
 
 # Expenses Routes
-
-
 @app.route("/expenses", methods=["GET", "POST"])
 def expenses():
     if request.method == "POST":

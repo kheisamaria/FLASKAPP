@@ -40,7 +40,11 @@ function Landing() {
 				</div>
 
 				<div className=" w-2/5 h-full pr-32 pb-20 flex items-center justify-center ">
-					<img src="/money.png" alt="money" className="w-3/4 h-fit" />
+					<img
+						src="/images/money.png"
+						alt="money"
+						className="w-3/4 h-fit"
+					/>
 				</div>
 			</div>
 		</div>

@@ -3,9 +3,12 @@
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { useState } from "react";
+import ShowPopup from "../components/ShowPopupSavings";
+import ErrorPopup from "../components/ErrorPopup";
 
 function Savings() {
 	const [showPopup, setShowPopup] = useState(false);
+	const [showErrorPopup, setShowErrorPopup] = useState(false);
 
 	const openPopup = () => {
 		setShowPopup(true);
@@ -32,6 +35,12 @@ function Savings() {
 	};
 
 	const handleSave = () => {
+		if (savingsData.description === "" || savingsData.category === "") {
+			// Show the error pop-up
+			setShowErrorPopup(true);
+			return;
+		}
+
 		const currentDate = new Date().toLocaleDateString();
 		const currentTime = new Date().toLocaleTimeString();
 
@@ -51,94 +60,91 @@ function Savings() {
 		<div className="bg-blue-950 h-screen w-screen">
 			<div className="w-full h-full">
 				<NavBar />
-				<div className="flex flex-col bg-yellow-500 h-80 w-full text-blue-950 gap-y-4 px-32 justify-center drop-shadow-2xl">
+				<div className="flex flex-col bg-yellow-500 h-80 w-full text-blue-950 gap-y-2 px-32 justify-center drop-shadow-2xl">
 					<div className="">
-						<div className="font-semibold text-lg">
-							Total Savings
+						<div className="font-semibold text-2xl">
+							Money Earned
 						</div>
 						<div className="font-semibold text-8xl">
-							₱ 300,000.00
+							Savings Tracker
 						</div>
 					</div>
-					<div className="text-lg">
-						Current Balance: Php 234,000.00
+					<div className="text-md italic  mt-1.5">
+						Enhance your financial insights by seamlessly adding
+						savings, <br /> consolidating a real-time overview of
+						total funds, encompassing both cash and assets.
 					</div>
 				</div>
-				<div className="px-32">
-					<div className=" h-8 w-full mt-5 flex justify-end">
-						<button
-							className="bg-yellow-500 h-full w-8 rounded-3xl"
-							onClick={openPopup}
-						>
-							+
-						</button>
+				<div className="px-32 mt-10">
+					<div className="h-16 w-full mt-5 flex flex-row justify-between items-end">
+						{/* Dynamic Total Savings */}
+						<div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
+							<div className="text-xs font-normal">
+								Total Savings
+							</div>
+							<div>Php 80,000.00</div>
+						</div>
+
+						{/* Add Savings */}
+						<div className="h-full flex items-end">
+							<button
+								className="bg-yellow-500 h-10 w-40 rounded-3xl border-1 border-black font-bold hover:bg-white"
+								onClick={openPopup}
+							>
+								Add Savings
+							</button>
+						</div>
 					</div>
-					<div className="">
-						<table className="bg-transparent mx-auto my-auto border-yellow-500 h-[500px] w-full mt-2 border text-yellow-500 overflow-y-auto">
-							<thead className="h-10">
+
+					<div className="mt-2 h-[500px] overflow-auto">
+						<table className="mx-auto my-auto table-container">
+							<thead className="h-10 table-header">
 								<tr>
-									<th
-										className="border border-yellow-500"
-										style={{ width: "5%" }}
-									>
-										#
-									</th>
-									<th
-										className="border border-yellow-500" //20
-										style={{ width: "20%" }}
-									>
-										Amount
-									</th>
-									<th
-										className="border border-yellow-500" //35
-										style={{ width: "25%" }}
-									>
+									<th style={{ width: "5%" }}>#</th>
+									<th style={{ width: "20%" }}>Amount</th>
+									<th style={{ width: "25%" }}>
 										Description
 									</th>
-									<th
-										className="border border-yellow-500" //45
-										style={{ width: "10%" }}
-									>
-										Date
-									</th>
-									<th
-										className="border border-yellow-500" //55
-										style={{ width: "10%" }}
-									>
-										Time
-									</th>
-									<th
-										className="border border-yellow-500" //70
-										style={{ width: "20%" }}
-									>
-										Category
-									</th>
-									<th
-										className="border border-yellow-500" //80
-										style={{ width: "5%" }}
-									>
-										Edit
-									</th>
-									<th
-										className="border border-yellow-500" //90
-										style={{ width: "5%" }}
-									>
-										Delete
-									</th>
+									<th style={{ width: "10%" }}>Date</th>
+									<th style={{ width: "10%" }}>Time</th>
+									<th style={{ width: "20%" }}>Category</th>
+									<th style={{ width: "5%" }}>Edit</th>
+									<th style={{ width: "5%" }}>Delete</th>
 								</tr>
 							</thead>
-							<tbody className="h-10">
-								{/* {savingsData.map((entry) => (
-									<tr key={entry.savings_id}>
-										<td>{entry.savings_id}</td>
-										<td>{entry.user_id}</td>
-										<td>{entry.amount}</td>
-										<td>{entry.description}</td>
-										<td>{entry.date}</td>
-										<td>{entry.time}</td>
-										<td>{entry.category}</td>
-									</tr>
-								))} */}
+							<tbody className="h-10 table-body">
+								<tr>
+									<td>
+										<div className="flex items-center justify-center">
+											1
+										</div>
+									</td>
+									<td>100.00</td>
+									<td>Groceries</td>
+									<td>2023-12-15</td>
+									<td>12:30 PM</td>
+									<td>Food</td>
+									<td>
+										<div className="flex items-center justify-center">
+											<img
+												src="/images/edit.png"
+												alt="edit"
+												className="w-7 h-7 grayscale hover:grayscale-0"
+												// onClick={}
+											/>
+										</div>
+									</td>
+									<td>
+										<div className="flex items-center justify-center">
+											<img
+												src="/images/delete.png"
+												alt="delete"
+												className="w-7 h-7 grayscale hover:grayscale-0"
+												// onClick={}
+											/>
+										</div>
+									</td>
+								</tr>
 							</tbody>
 						</table>
 					</div>
@@ -148,76 +154,17 @@ function Savings() {
 
 			{/* Pop-up */}
 			{showPopup && (
-				<div className="fixed top-0 left-0 w-full h-full flex items-center justify-center">
-					<div className="absolute w-full h-full bg-gray-900 opacity-50"></div>
-					<div className="bg-white p-8 w-[800px] h-[500px] rounded-lg z-10">
-						<div className="flex justify-center font-bold text-2xl mt-2">
-							Add Savings
-						</div>
-						<div className="mt-6">
-							<div className="flex flex-row w-full gap-x-6">
-								<div className="w-1/2">
-									<label className="block text-md mb-1">
-										Enter Amount
-									</label>
-									<input
-										type="number"
-										className="h-[50px] w-full border border-gray-300 p-2 mb-4"
-										name="amount"
-										value={savingsData.amount}
-										onChange={handleChange}
-									/>
-								</div>
-								<div className="w-1/2">
-									<label className="block text-md mb-1">
-										Category
-									</label>
-									<select
-										className="h-[50px] w-full border border-gray-300 p-2 mb-4"
-										name="category"
-										value={savingsData.category}
-										onChange={handleChange}
-									>
-										<option>Please Select...</option>
-										<option value="savings">
-											Allowance
-										</option>
-										<option value="checking">Salary</option>
-										<option value="cash">Checking</option>
-										<option value="cash">Cash</option>
-									</select>
-								</div>
-							</div>
-							<div>
-								<label className="block text-md mb-1">
-									Description
-								</label>
-								<textarea
-									type="text"
-									className="h-[150px] w-full border border-gray-300 p-2 mb-4"
-									name="description"
-									value={savingsData.description}
-									onChange={handleChange}
-								/>
-							</div>
-						</div>
+				<ShowPopup
+					savingsData={savingsData}
+					handleChange={handleChange}
+					closePopup={closePopup}
+					handleSave={handleSave}
+				/>
+			)}
 
-						<div className="flex justify-center w-full gap-x-1 mt-2">
-							<button
-								className=" bg-blue-950 text-white px-4 py-2 rounded-xl w-1/3"
-								onClick={closePopup}
-							>
-								Cancel
-							</button>
-							<button
-								className="bg-yellow-500 text-white px-4 py-2 ml-4 rounded-xl w-1/3"
-								onClick={handleSave}
-							>
-								Save
-							</button>
-						</div>
-					</div>
-				</div>
+			{/* Error Pop Up */}
+			{showErrorPopup && (
+				<ErrorPopup setShowErrorPopup={setShowErrorPopup} />
 			)}
 		</div>
 	);

@@ -42,7 +42,7 @@ Content-Type: application/json
 # }
 
 {
-  "user_id": 3,
+  "user_id": 1,
   "amount": 50.00,
   "description": "Groceries",
   "frequency": "Monthly",

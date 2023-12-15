@@ -1,9 +1,10 @@
 // note ma error sya basta dili unique ang email and username butangan lang error per anue para klaro pero laters
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function Registration() {
+  const navigate = useNavigate();
   const [user, setUser] = useState({
     full_name: "",
     email: "",
@@ -29,11 +30,10 @@ function Registration() {
       });
     }
 
-    console.log(user);
-
     try {
       const result = await axios.post("http://localhost:5000/users", user);
       console.log("Created", result);
+      navigate("/login");
     } catch (error) {
       console.log("error", error);
     }
@@ -155,7 +155,10 @@ function Registration() {
             </div>
 
             <div className="flex flex-col items-end justify-end mt-14 ">
-              <button className="bg-blue-950 text-white h-12 w-2/5 rounded-lg shadow-lg">
+              <button
+                type="submit"
+                className="bg-blue-950 text-white h-12 w-2/5 rounded-lg shadow-lg"
+              >
                 Register
               </button>
             </div>

@@ -8,21 +8,24 @@ import Home from "./pages/Home";
 import Savings from "./pages/Savings";
 import Expenses from "./pages/Expenses.js";
 import Transactions from "./pages/Transactions.js";
+import { UserProvider, useUserContext } from "./UserContext.js";
 
 function App() {
-	return (
-		<BrowserRouter>
-			<Routes>
-				<Route path="/" element={<Landing />} />
-				<Route path="/login" element={<Login />} />
-				<Route path="/registration" element={<Registration />} />
-				<Route path="/home" element={<Home />} />
-				<Route path="/savings" element={<Savings />} />
-				<Route path="/expenses" element={<Expenses />} />
-				<Route path="/transactions" element={<Transactions />} />
-			</Routes>
-		</BrowserRouter>
-	);
+  return (
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/savings" element={<Savings />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/transactions" element={<Transactions />} />
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
+  );
 }
 
 export default App;

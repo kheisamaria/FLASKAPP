@@ -305,7 +305,7 @@ FOR EACH ROW
 BEGIN
     DECLARE user_balance DECIMAL(10, 2);
     SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
-    UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
+    UPDATE users SET balance = user_balance + NEW.amount WHERE user_id = NEW.user_id;
 END;
 //
 DELIMITER ;

@@ -1,5 +1,7 @@
 // import "./App.css";
 
+import { Link } from "react-router-dom";
+
 function Login() {
 	return (
 		<div className="bg-blue-950 h-screen w-screen flex items-center justify-center">
@@ -49,15 +51,19 @@ function Login() {
 				</div>
 
 				<div className="flex justify-center mt-10">
-					<button className="bg-blue-950 text-white h-12 w-3/5 rounded-lg shadow-lg">
-						Login
-					</button>
+					<Link to="/home" className="w-full flex justify-center">
+						<button className="bg-blue-950 text-white h-12 w-3/5 rounded-lg shadow-lg">
+							Login
+						</button>
+					</Link>
 				</div>
 
 				<div className="flex justify-center mt-2">
-					<label className="text-xs font-thin italic">
-						Don't have an account? Register!
-					</label>
+					<Link to="/registration">
+						<label className="text-xs font-thin italic hover:text-yellow-500">
+							Don't have an account? Register!
+						</label>
+					</Link>
 				</div>
 			</div>
 		</div>

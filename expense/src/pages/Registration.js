@@ -1,5 +1,7 @@
 // import "./App.css";
 
+import { Link } from "react-router-dom";
+
 function Registration() {
 	return (
 		<div className="bg-blue-950 h-screen w-screen flex">
@@ -105,9 +107,11 @@ function Registration() {
 						</button>
 
 						<div className="flex justify-center mt-2">
-							<label className="text-xs font-thin italic">
-								Have an account? Login!
-							</label>
+							<Link to="/login">
+								<label className="text-xs font-thin italic hover:text-yellow-500">
+									Have an account? Login!
+								</label>
+							</Link>
 						</div>
 					</div>
 				</div>

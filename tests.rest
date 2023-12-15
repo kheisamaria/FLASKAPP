@@ -42,7 +42,7 @@ Content-Type: application/json
 # }
 
 {
-  "user_id": 1,
+  "user_id": 3,
   "amount": 50.00,
   "description": "Groceries",
   "frequency": "Monthly",
@@ -57,9 +57,13 @@ Content-Type: application/json
 GET {{host}}/users/3
 Content-Type: application/json
 
+###
+GET {{host}}/transactions/user/3
+Content-Type: application/json
+
 
 ### Update an item
-PUT {{host}}/expenses/1
+PUT {{host}}/expenses/3
 Content-Type: application/json
 
 # {

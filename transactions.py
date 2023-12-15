@@ -17,6 +17,12 @@ def get_transaction(transaction_id):
     result = fetchone(query, params)
     return result
 
+def get_transactions_by_user(user_id):
+    query = "SELECT transaction_id, user_id, amount, description, date, time, payment_method FROM transactions WHERE user_id = %s"
+    params = (user_id,)
+    result = fetchall(query, params)
+    return result
+
 def update_transaction(transaction_id, user_id, amount, description, date, time, payment_method):
     query = "CALL update_transaction(%s, %s, %s, %s, %s, %s, %s)"
     params = (transaction_id, user_id, amount, description, date, time, payment_method)

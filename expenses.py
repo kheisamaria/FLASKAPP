@@ -21,6 +21,13 @@ def get_expense(expense_id):
     return result
 
 
+def get_expenses_by_user(user_id):
+    query = "SELECT expense_id, user_id, amount, description, frequency, paid FROM expenses WHERE user_id = %s"
+    params = (user_id,)
+    result = fetchall(query, params)
+    return result
+
+
 def update_expense(expense_id, user_id, amount, description, frequency, paid):
     query = "CALL update_expense(%s, %s, %s, %s, %s, %s)"
     params = (expense_id, user_id, amount, description, frequency, paid)

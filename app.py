@@ -2,9 +2,9 @@ import os
 from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
 from users import create_user, get_users, get_user, update_user, delete_user
-from transactions import create_transaction, get_transactions, get_transaction, update_transaction, delete_transaction
-from savings import create_savings, get_savings, get_savings_entry, update_savings, delete_savings
-from expenses import create_expense, get_expenses, get_expense, update_expense, delete_expense
+from transactions import create_transaction, get_transactions, get_transaction, update_transaction, delete_transaction, get_transactions_by_user
+from savings import create_savings, get_savings, get_savings_entry, update_savings, delete_savings, get_savings_by_user
+from expenses import create_expense, get_expenses, get_expense, update_expense, delete_expense, get_expenses_by_user
 from database import set_mysql
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -115,6 +115,17 @@ def transaction(transaction_id):
             transaction_entry[key] = convert_timedelta_to_str(value)
 
         return jsonify(transaction_entry)
+    
+@app.route("/transactions/user/<int:user_id>", methods=["GET"])
+def transactions_by_user(user_id):
+    transactions = get_transactions_by_user(user_id)
+
+    # Convert timedelta to string in each transaction entry
+    for transaction in transactions:
+        for key, value in transaction.items():
+            transaction[key] = convert_timedelta_to_str(value)
+
+    return jsonify(transactions)
 
 # Savings Routes
 
@@ -160,6 +171,18 @@ def savings_entry(savings_id):
             savings_entry[key] = convert_timedelta_to_str(value)
 
         return jsonify(savings_entry)
+    
+# Savings Routes by User ID
+@app.route("/savings/user/<int:user_id>", methods=["GET"])
+def savings_by_user(user_id):
+    savings_entries = get_savings_by_user(user_id)
+
+    # Convert timedelta to string in each savings entry
+    for savings_entry in savings_entries:
+        for key, value in savings_entry.items():
+            savings_entry[key] = convert_timedelta_to_str(value)
+
+    return jsonify(savings_entries)
 
 # Expenses Routes
 
@@ -194,6 +217,12 @@ def expense(expense_id):
     else:
         expense_entry = get_expense(expense_id)
         return jsonify(expense_entry)
+
+# Expenses Routes by User ID
+@app.route("/expenses/user/<int:user_id>", methods=["GET"])
+def expenses_by_user(user_id):
+    expenses_entries = get_expenses_by_user(user_id)
+    return jsonify(expenses_entries)
 
 
 if __name__ == "__main__":

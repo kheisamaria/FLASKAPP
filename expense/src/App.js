@@ -8,7 +8,7 @@ import Home from "./pages/Home";
 import Savings from "./pages/Savings";
 import Expenses from "./pages/Expenses.js";
 import Transactions from "./pages/Transactions.js";
-import { UserProvider, useUserContext } from "./UserContext.js";
+import { UserProvider } from "./UserContext.js";
 
 function App() {
   return (

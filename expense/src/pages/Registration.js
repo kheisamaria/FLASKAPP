@@ -1,6 +1,6 @@
 // note ma error sya basta dili unique ang email and username butangan lang error per anue para klaro pero laters
 import { Link, useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 function Registration() {
@@ -18,7 +18,7 @@ function Registration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (e.target.password.value != e.target.confirmPassword.value) {
+    if (e.target.password.value !== e.target.confirmPassword.value) {
       setPasswordMatch(false);
       return;
     } else {

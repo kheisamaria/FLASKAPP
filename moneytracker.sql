@@ -204,17 +204,19 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Update the balance of the user after every savings entry
+-- Trigger to handle updates in the savings table
 DELIMITER //
-CREATE TRIGGER after_insert_savings
-AFTER INSERT ON savings
+CREATE TRIGGER after_update_savings
+AFTER UPDATE ON savings
 FOR EACH ROW
 BEGIN
     DECLARE user_balance DECIMAL(10, 2);
-    SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
 
     -- Check if the savings amount was updated
-    IF OLD IS NOT NULL AND NEW.amount != OLD.amount THEN
+    IF NEW.amount != OLD.amount THEN
+        -- Retrieve the current user balance
+        SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+
         -- If the new amount is smaller, add the difference to the balance
         IF NEW.amount < OLD.amount THEN
             UPDATE users SET balance = user_balance + (OLD.amount - NEW.amount) WHERE user_id = NEW.user_id;
@@ -222,9 +224,6 @@ BEGIN
         ELSE
             UPDATE users SET balance = user_balance - (NEW.amount - OLD.amount) WHERE user_id = NEW.user_id;
         END IF;
-    -- If it's a new savings entry, subtract the amount from the balance
-    ELSE
-        UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
     END IF;
 END;
 //

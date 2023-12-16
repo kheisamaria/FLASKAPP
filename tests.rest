@@ -2,7 +2,7 @@
 
 
 ### Create users
-POST {{host}}/expenses
+POST {{host}}/savings
 Content-Type: application/json
 
 # {
@@ -32,22 +32,22 @@ Content-Type: application/json
 #   "payment_method": "Credit Card"
 # }
 
-# {
-#       "user_id": 1,
-#       "amount": 500.00,
-#       "description": "Emergency Fund",
-#       "date": "2023-01-15",
-#       "time": "08:30:00",
-#       "category": "Emergency"
-# }
-
 {
-  "user_id": 1,
-  "amount": 50.00,
-  "description": "Groceries",
-  "frequency": "Monthly",
-  "paid": true
+      "user_id": 1,
+      "amount": 500.00,
+      "description": "Emergency Fund",
+      "date": "2023-01-15",
+      "time": "08:30:00",
+      "category": "Emergency"
 }
+
+# {
+#   "user_id": 1,
+#   "amount": 50.00,
+#   "description": "Groceries",
+#   "frequency": "Monthly",
+#   "paid": true
+# }
 ### Read all items
 GET {{host}}/users
 Content-Type: application/json
@@ -63,8 +63,18 @@ Content-Type: application/json
 
 
 ### Update an item
-PUT {{host}}/expenses/3
+PUT {{host}}/savings/1
 Content-Type: application/json
+
+{
+      "user_id": 1,
+      "amount": 400.00,
+      "description": "Emergency Fund",
+      "date": "2023-01-15",
+      "time": "08:30:00",
+      "category": "Emergency"
+}
+
 
 # {
 #   "full_name": "Test Doe",
@@ -94,13 +104,13 @@ Content-Type: application/json
 # }
 
 
-{
-  "user_id": 1,
-  "amount": 150.00,
-  "description": "Groceries nalang",
-  "frequency": "Weekly",
-  "paid": false
-}
+# {
+#   "user_id": 1,
+#   "amount": 150.00,
+#   "description": "Groceries nalang",
+#   "frequency": "Weekly",
+#   "paid": false
+# }
 ### Delete an item
 DELETE {{host}}/expenses/2
 Content-Type: application/json

@@ -5,17 +5,48 @@ import Footer from "../components/Footer";
 import { useState } from "react";
 import ShowPopup from "../components/ShowPopupExpenses";
 import ErrorPopup from "../components/ErrorPopup";
+import Header from "../components/Header";
+import DeletePopUp from "../components/DeletePopUp";
 
 function Expenses() {
 	const [showPopup, setShowPopup] = useState(false);
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
-
-	const openPopup = () => {
-		setShowPopup(true);
-	};
+	const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+	const [showDeletePopup, setShowDeletePopup] = useState(false);
 
 	const closePopup = () => {
+		setExpenseData(formData);
+
+		if (showErrorPopup === true) {
+			setShowErrorPopup(false);
+			return;
+		}
+
+		if (showDeletePopup === true) {
+			setShowDeletePopup(false);
+			return;
+		}
+
 		setShowPopup(false);
+		setShowUpdatePopup(false);
+	};
+
+	const handlePopUpPaidChange = () => {
+		// Paid status of pop up dialogs
+		setExpenseData({
+			...expenseData,
+			paid: !expenseData.paid,
+		});
+	};
+
+	const handlePaidStatus = () => {
+		// Paid status directly of the table
+		setExpenseData({
+			...expenseData,
+			paid: !expenseData.paid,
+		});
+
+		console.log("Paid status changed.");
 	};
 
 	// Create savings data
@@ -50,24 +81,23 @@ function Expenses() {
 		closePopup();
 	};
 
+	const handleDelete = () => {
+		console.log("Expense deleted.");
+		closePopup();
+	};
+
 	return (
 		<div className="bg-blue-950 h-screen w-screen">
 			<div className="w-full h-full">
 				<NavBar />
-				<div className="flex flex-col bg-yellow-500 h-80 w-full text-blue-950 gap-y-2 px-32 justify-center drop-shadow-2xl">
-					<div className="">
-						<div className="font-semibold text-2xl">The List</div>
-						<div className="font-semibold text-8xl">
-							Expenses Tracker
-						</div>
-					</div>
-					<div className="text-md italic mt-1.5">
-						Effortlessly manage your monthly bills with this— track
-						amounts, <br />
-						describe expenses, set frequencies, and monitor payment
-						status. Take control now!
-					</div>
-				</div>
+				<Header
+					title="Expenses Tracker"
+					subtitle="The List"
+					description="Effortlessly manage your monthly bills with this— track
+					amounts, describe expenses, set frequencies, and monitor payment
+					status. Take control now!"
+				/>
+
 				<div className="px-56 mt-10">
 					<div className="h-16 w-full mt-5 flex flex-row justify-between items-end">
 						<div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
@@ -82,7 +112,7 @@ function Expenses() {
 						<div className="h-full flex items-end">
 							<button
 								className="bg-yellow-500 h-10 w-40 rounded-3xl border-1 border-black font-bold hover:bg-white"
-								onClick={openPopup}
+								onClick={() => setShowPopup(true)}
 							>
 								Add Expense
 							</button>
@@ -94,6 +124,7 @@ function Expenses() {
 							<thead className="h-10 table-header">
 								<tr>
 									<th style={{ width: "5%" }}>#</th>
+									<th style={{ width: "5%" }}>Paid</th>
 									<th style={{ width: "20%" }}>
 										Amount to Pay
 									</th>
@@ -101,7 +132,7 @@ function Expenses() {
 										Description
 									</th>
 									<th style={{ width: "10%" }}>Frequency</th>
-									<th style={{ width: "5%" }}>Paid</th>
+
 									<th style={{ width: "5%" }}>Edit</th>
 									<th style={{ width: "5%" }}>Delete</th>
 								</tr>
@@ -113,26 +144,29 @@ function Expenses() {
 											1
 										</div>
 									</td>
-									<td>Php 100.00</td>
-									<td>Groceries</td>
-									<td>Monthly</td>
 									<td>
-										{/* insert checkbox */}
 										<div className="flex items-center justify-center">
 											<input
 												type="checkbox"
 												className="w-5 h-5 bg-yellow-500"
-												// onChange={}
+												onChange={handlePaidStatus}
+												checked={expenseData.paid}
 											/>
 										</div>
 									</td>
+									<td>Php 100.00</td>
+									<td>Groceries</td>
+									<td>Monthly</td>
+
 									<td>
 										<div className="flex items-center justify-center">
 											<img
 												src="/images/edit.png"
 												alt="edit"
 												className="w-7 h-7 grayscale hover:grayscale-0"
-												// onClick={}
+												onClick={() =>
+													setShowUpdatePopup(true)
+												}
 											/>
 										</div>
 									</td>
@@ -142,7 +176,9 @@ function Expenses() {
 												src="/images/delete.png"
 												alt="delete"
 												className="w-7 h-7 grayscale hover:grayscale-0"
-												// onClick={}
+												onClick={() =>
+													setShowDeletePopup(true)
+												}
 											/>
 										</div>
 									</td>
@@ -157,10 +193,33 @@ function Expenses() {
 			{/* Pop-up */}
 			{showPopup && (
 				<ShowPopup
+					title="Add Expense"
 					expenseData={expenseData}
 					handleChange={handleChange}
 					closePopup={closePopup}
+					handlePopUpPaidChange={handlePopUpPaidChange}
 					handleSave={handleSave}
+				/>
+			)}
+
+			{/* Update Pop Up */}
+			{showUpdatePopup && (
+				<ShowPopup
+					title="Update Expense"
+					expenseData={expenseData}
+					handleChange={handleChange}
+					closePopup={closePopup}
+					handlePopUpPaidChange={handlePopUpPaidChange}
+					handleSave={handleSave}
+				/>
+			)}
+
+			{/* Delete Pop Up */}
+			{showDeletePopup && (
+				<DeletePopUp
+					title="expense"
+					handleDelete={handleDelete}
+					closePopup={() => setShowDeletePopup(false)}
 				/>
 			)}
 

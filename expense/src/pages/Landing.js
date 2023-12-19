@@ -18,8 +18,8 @@ function Landing() {
 			</div>
 
 			{/* Main Content */}
-			<div className="h-[700px] w-screen flex flex-row">
-				<div className=" w-3/5 h-full px-32 flex flex-col gap-y-2 text-white justify-center">
+			<div className="h-[700px] w-screen flex flex-row ">
+				<div className=" w-4/5 h-full px-32 flex flex-col gap-y-2 text-white justify-center mt-16">
 					<div className="h-fit text-6xl font-extrabold">
 						8 out of 10 people struggle to track their money.
 					</div>
@@ -39,7 +39,7 @@ function Landing() {
 					</Link>
 				</div>
 
-				<div className=" w-2/5 h-full pr-32 pb-20 flex items-center justify-center ">
+				<div className=" w-3/5 h-full pr-32 pb-20 flex items-center justify-center mt-10">
 					<img
 						src="/images/money.png"
 						alt="money"

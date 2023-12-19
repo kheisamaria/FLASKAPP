@@ -1,24 +1,34 @@
-// import "./App.css";
-
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { useState } from "react";
 import ShowPopup from "../components/ShowPopupSavings";
 import ErrorPopup from "../components/ErrorPopup";
+import DeletePopUp from "../components/DeletePopUp";
+import Header from "../components/Header";
 
 function Savings() {
 	const [showPopup, setShowPopup] = useState(false);
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
-
-	const openPopup = () => {
-		setShowPopup(true);
-	};
+	const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+	const [showDeletePopup, setShowDeletePopup] = useState(false);
 
 	const closePopup = () => {
+		setSavingsData(formData);
+
+		if (showErrorPopup === true) {
+			setShowErrorPopup(false);
+			return;
+		}
+
+		if (showDeletePopup === true) {
+			setShowDeletePopup(false);
+			return;
+		}
+
 		setShowPopup(false);
+		setShowUpdatePopup(false);
 	};
 
-	// Create savings data
 	const formData = {
 		amount: 0,
 		description: "",
@@ -28,7 +38,6 @@ function Savings() {
 	};
 
 	const [savingsData, setSavingsData] = useState(formData);
-
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setSavingsData({ ...savingsData, [name]: value });
@@ -36,7 +45,6 @@ function Savings() {
 
 	const handleSave = () => {
 		if (savingsData.description === "" || savingsData.category === "") {
-			// Show the error pop-up
 			setShowErrorPopup(true);
 			return;
 		}
@@ -56,31 +64,33 @@ function Savings() {
 		closePopup();
 	};
 
+	// Read savings data
+
+	// Update savings data
+
+	// Delete savings data
+	const handleDelete = () => {
+		console.log("Savings deleted.");
+		closePopup();
+	};
+
 	return (
 		<div className="bg-blue-950 h-screen w-screen">
 			<div className="w-full h-full">
 				<NavBar />
-				<div className="flex flex-col bg-yellow-500 h-80 w-full text-blue-950 gap-y-2 px-32 justify-center drop-shadow-2xl">
-					<div className="">
-						<div className="font-semibold text-2xl">
-							Money Earned
-						</div>
-						<div className="font-semibold text-8xl">
-							Savings Tracker
-						</div>
-					</div>
-					<div className="text-md italic  mt-1.5">
-						Enhance your financial insights by seamlessly adding
-						savings, <br /> consolidating a real-time overview of
-						total funds, encompassing both cash and assets.
-					</div>
-				</div>
+				<Header
+					title="Savings Tracker"
+					subtitle="Money Earned"
+					description="Enhance your financial insights by seamlessly adding savings,
+				consolidating a real-time overview of total funds,
+				encompassing both cash and assets."
+				/>
 				<div className="px-32 mt-10">
 					<div className="h-16 w-full mt-5 flex flex-row justify-between items-end">
 						{/* Dynamic Total Savings */}
 						<div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
 							<div className="text-xs font-normal">
-								Total Savings
+								Money Earned
 							</div>
 							<div>Php 80,000.00</div>
 						</div>
@@ -89,7 +99,7 @@ function Savings() {
 						<div className="h-full flex items-end">
 							<button
 								className="bg-yellow-500 h-10 w-40 rounded-3xl border-1 border-black font-bold hover:bg-white"
-								onClick={openPopup}
+								onClick={() => setShowPopup(true)}
 							>
 								Add Savings
 							</button>
@@ -130,7 +140,9 @@ function Savings() {
 												src="/images/edit.png"
 												alt="edit"
 												className="w-7 h-7 grayscale hover:grayscale-0"
-												// onClick={}
+												onClick={() =>
+													setShowUpdatePopup(true)
+												}
 											/>
 										</div>
 									</td>
@@ -140,7 +152,9 @@ function Savings() {
 												src="/images/delete.png"
 												alt="delete"
 												className="w-7 h-7 grayscale hover:grayscale-0"
-												// onClick={}
+												onClick={() =>
+													setShowDeletePopup(true)
+												}
 											/>
 										</div>
 									</td>
@@ -155,10 +169,31 @@ function Savings() {
 			{/* Pop-up */}
 			{showPopup && (
 				<ShowPopup
+					title="Add Savings"
 					savingsData={savingsData}
 					handleChange={handleChange}
 					closePopup={closePopup}
 					handleSave={handleSave}
+				/>
+			)}
+
+			{/* Update Pop Up */}
+			{showUpdatePopup && (
+				<ShowPopup
+					title="Update Savings"
+					savingsData={savingsData}
+					handleChange={handleChange}
+					closePopup={closePopup}
+					handleSave={handleSave}
+				/>
+			)}
+
+			{/* Delete Pop Up */}
+			{showDeletePopup && (
+				<DeletePopUp
+					title="savings"
+					handleDelete={handleDelete}
+					closePopup={() => setShowDeletePopup(false)}
 				/>
 			)}
 

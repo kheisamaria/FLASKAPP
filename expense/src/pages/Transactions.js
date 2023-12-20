@@ -1,7 +1,7 @@
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
 import { useState } from "react";
-import ShowPopup from "../components/ShowPopupSavings";
+import ShowPopup from "../components/ShowPopupTransactions";
 import ErrorPopup from "../components/ErrorPopup";
 import DeletePopUp from "../components/DeletePopUp";
 import Header from "../components/Header";
@@ -13,7 +13,7 @@ function Transactions() {
 	const [showDeletePopup, setShowDeletePopup] = useState(false);
 
 	const closePopup = () => {
-		setSavingsData(formData);
+		setTransactionData(formData);
 
 		if (showErrorPopup === true) {
 			setShowErrorPopup(false);
@@ -37,14 +37,17 @@ function Transactions() {
 		time: "",
 	};
 
-	const [savingsData, setSavingsData] = useState(formData);
+	const [transactionData, setTransactionData] = useState(formData);
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		setSavingsData({ ...savingsData, [name]: value });
+		setTransactionData({ ...transactionData, [name]: value });
 	};
 
 	const handleSave = () => {
-		if (savingsData.description === "" || savingsData.category === "") {
+		if (
+			transactionData.description === "" ||
+			transactionData.category === ""
+		) {
 			setShowErrorPopup(true);
 			return;
 		}
@@ -53,24 +56,24 @@ function Transactions() {
 		const currentTime = new Date().toLocaleTimeString();
 
 		const newData = {
-			...savingsData,
+			...transactionData,
 			date: currentDate,
 			time: currentTime,
 		};
 
 		console.log("Saving data to the database:", newData);
 
-		setSavingsData(formData);
+		setTransactionData(formData);
 		closePopup();
 	};
 
-	// Read savings data
+	// Read Transaction data
 
-	// Update savings data
+	// Update Transaction data
 
-	// Delete savings data
+	// Delete Transaction data
 	const handleDelete = () => {
-		console.log("Savings deleted.");
+		console.log("Transaction deleted.");
 		closePopup();
 	};
 
@@ -86,7 +89,7 @@ function Transactions() {
 				/>
 				<div className="px-32 mt-10">
 					<div className="h-16 w-full mt-5 flex flex-row justify-between items-end">
-						{/* Dynamic Total Savings */}
+						{/* Dynamic Total Transaction */}
 						<div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
 							<div className="text-xs font-normal">
 								Money Spent
@@ -94,7 +97,7 @@ function Transactions() {
 							<div>Php 80,000.00</div>
 						</div>
 
-						{/* Add Savings */}
+						{/* Add Transaction */}
 						<div className="h-full flex items-end">
 							<button
 								className="bg-yellow-500 h-10 w-44 rounded-3xl border-1 border-black font-bold hover:bg-white"
@@ -167,11 +170,11 @@ function Transactions() {
 				<Footer />
 			</div>
 
-			{/* Pop-up */}
+			{/* Create Pop-up */}
 			{showPopup && (
 				<ShowPopup
-					title="Add Savings"
-					savingsData={savingsData}
+					title="Add Transaction"
+					transactionData={transactionData}
 					handleChange={handleChange}
 					closePopup={closePopup}
 					handleSave={handleSave}
@@ -181,8 +184,8 @@ function Transactions() {
 			{/* Update Pop Up */}
 			{showUpdatePopup && (
 				<ShowPopup
-					title="Update Savings"
-					savingsData={savingsData}
+					title="Update Transaction"
+					transactionData={transactionData}
 					handleChange={handleChange}
 					closePopup={closePopup}
 					handleSave={handleSave}
@@ -192,7 +195,7 @@ function Transactions() {
 			{/* Delete Pop Up */}
 			{showDeletePopup && (
 				<DeletePopUp
-					title="savings"
+					title="transaction"
 					handleDelete={handleDelete}
 					closePopup={() => setShowDeletePopup(false)}
 				/>

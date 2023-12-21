@@ -43,7 +43,7 @@ const ShowPopupTransactions = ({
 								<select
 									className="h-[50px] w-full border border-gray-300 p-2 mb-4"
 									name="payment_method"
-									value={transactionData.category}
+									value={transactionData.payment_method}
 									onChange={handleChange}
 								>
 									<option value="">Please Select...</option>

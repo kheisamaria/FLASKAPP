@@ -1,13 +1,13 @@
 // import "./App.css";
 
 import { Link, useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { useUserContext } from "../UserContext.js";
+import UserContext from "../UserContext";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useUserContext();
+  const { updateUser } = useContext(UserContext);
   const [useData, setUserData] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -45,8 +45,8 @@ function Login() {
     if (user) {
       setEmailError(false);
       if (user.password === password) {
-        login(user);
         setPasswordError(false);
+        updateUser(user.user_id);
         navigate("/home");
       } else {
         setPasswordError(true);

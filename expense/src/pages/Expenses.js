@@ -2,233 +2,289 @@
 
 import NavBar from "../components/NavBar";
 import Footer from "../components/Footer";
-import { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ShowPopup from "../components/ShowPopupExpenses";
 import ErrorPopup from "../components/ErrorPopup";
 import Header from "../components/Header";
 import DeletePopUp from "../components/DeletePopUp";
+import axios from "axios";
+import UserContext from "../UserContext";
 
+// naay error sa pagcount sa unpaid expenses
 function Expenses() {
-	const [showPopup, setShowPopup] = useState(false);
-	const [showErrorPopup, setShowErrorPopup] = useState(false);
-	const [showUpdatePopup, setShowUpdatePopup] = useState(false);
-	const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const { user } = useContext(UserContext);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [expenses, setExpenses] = useState([]);
+  const [toBeDeleted, setToBeDeleted] = useState({});
+  const [unpaidExpensesCount, setUnpaidExpensesCount] = useState();
 
-	const closePopup = () => {
-		setExpenseData(formData);
+  useEffect(() => {
+    fetchExpenses();
+  }, [user]);
 
-		if (showErrorPopup === true) {
-			setShowErrorPopup(false);
-			return;
-		}
+  const closePopup = () => {
+    setExpenseData(formData);
 
-		if (showDeletePopup === true) {
-			setShowDeletePopup(false);
-			return;
-		}
+    if (showErrorPopup === true) {
+      setShowErrorPopup(false);
+      return;
+    }
 
-		setShowPopup(false);
-		setShowUpdatePopup(false);
-	};
+    if (showDeletePopup === true) {
+      setShowDeletePopup(false);
+      return;
+    }
 
-	const handlePopUpPaidChange = () => {
-		// Paid status of pop up dialogs
-		setExpenseData({
-			...expenseData,
-			paid: !expenseData.paid,
-		});
-	};
+    setShowPopup(false);
+    setShowUpdatePopup(false);
+  };
 
-	const handlePaidStatus = () => {
-		// Paid status directly of the table
-		setExpenseData({
-			...expenseData,
-			paid: !expenseData.paid,
-		});
+  const handlePopUpPaidChange = () => {
+    // Paid status of pop up dialogs
+    setExpenseData({
+      ...expenseData,
+      paid: !expenseData.paid,
+    });
+  };
 
-		console.log("Paid status changed.");
-	};
+  const handlePaidStatus = () => {
+    // Paid status directly of the table
+    setExpenseData({
+      ...expenseData,
+      paid: !expenseData.paid,
+    });
 
-	// Create savings data
-	const formData = {
-		amount: 0,
-		description: "",
-		frequency: "",
-		paid: false,
-	};
+    console.log("Paid status changed.");
+  };
 
-	const [expenseData, setExpenseData] = useState(formData);
+  // Create savings data
+  const formData = {
+    amount: 0,
+    description: "",
+    frequency: "",
+    paid: false,
+    user_id: user,
+  };
 
-	const handleChange = (e) => {
-		const { name, value } = e.target;
-		setExpenseData({ ...expenseData, [name]: value });
-	};
+  const [expenseData, setExpenseData] = useState(formData);
 
-	const handleSave = () => {
-		if (expenseData.description === "" || expenseData.category === "") {
-			// Show the error pop-up
-			setShowErrorPopup(true);
-			return;
-		}
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setExpenseData({ ...expenseData, [name]: value });
+  };
 
-		const newData = {
-			...expenseData,
-		};
+  const handleSave = () => {
+    if (expenseData.description === "" || expenseData.category === "") {
+      // Show the error pop-up
+      setShowErrorPopup(true);
+      return;
+    }
 
-		console.log("Saving data to the database:", newData);
+    const newData = {
+      ...expenseData,
+    };
 
-		setExpenseData(formData);
-		closePopup();
-	};
+    console.log("Saving data to the database:", newData);
 
-	const handleDelete = () => {
-		console.log("Expense deleted.");
-		closePopup();
-	};
+    setExpenseData(formData);
+    handleCreate();
+    closePopup();
+  };
 
-	return (
-		<div className="bg-blue-950 h-screen w-screen">
-			<div className="w-full h-full">
-				<NavBar />
-				<Header
-					title="Expenses Tracker"
-					subtitle="The List"
-					description="Effortlessly manage your monthly bills with this— track
+  // Read expenses data
+  const fetchExpenses = () => {
+    axios
+      .get(`http://localhost:5000/expenses/user/${user}`)
+      .then((response) => {
+        setExpenses(response.data);
+        const unpaidCount = expenses.filter(
+          (expense) => expense.paid === false
+        ).length;
+        setUnpaidExpensesCount(unpaidCount);
+        console.log(unpaidExpensesCount);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // Create expenses data
+  const handleCreate = () => {
+    axios
+      .post("http://localhost:5000/expenses", expenseData)
+      .then(() => {
+        fetchExpenses();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // Update expenses data
+  const handleUpdate = (expense) => {};
+
+  // Delete expenses data
+  const deleteHandling = (expense) => {
+    setToBeDeleted(expense);
+    setShowDeletePopup(true);
+  };
+
+  const handleDelete = (expense) => {
+    axios
+      .delete(`http://localhost:5000/expenses/${expense.expense_id}`)
+      .then(() => {
+        fetchExpenses();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    console.log("Deleted expense:", expense);
+    closePopup();
+  };
+
+  return (
+    <div className="bg-blue-950 h-screen w-screen">
+      <div className="w-full h-full">
+        <NavBar />
+        <Header
+          title="Expenses Tracker"
+          subtitle="The List"
+          description="Effortlessly manage your monthly bills with this— track
 					amounts, describe expenses, set frequencies, and monitor payment
 					status. Take control now!"
-				/>
+        />
 
-				<div className="px-56 mt-10">
-					<div className="h-16 w-full mt-5 flex flex-row justify-between items-end">
-						<div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
-							<div className="text-xs font-normal">
-								Unpaid Expenses
-							</div>
-							<div>
-								<span>12</span> Expenses to Pay
-							</div>
-						</div>
+        <div className="px-56 mt-10">
+          <div className="h-16 w-full mt-5 flex flex-row justify-between items-end">
+            <div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
+              {unpaidExpensesCount > 0 ? (
+                <>
+                  <div className="text-xs font-normal">Unpaid Expenses</div>
+                  <div>
+                    <span>{unpaidExpensesCount}</span> Expenses to Pay
+                  </div>
+                </>
+              ) : (
+                <div>No Unpaid Expenses</div>
+              )}
+            </div>
+            <div className="h-full flex items-end">
+              <button
+                className="bg-yellow-500 h-10 w-40 rounded-3xl border-1 border-black font-bold hover:bg-white"
+                onClick={() => setShowPopup(true)}
+              >
+                Add Expense
+              </button>
+            </div>
+          </div>
 
-						<div className="h-full flex items-end">
-							<button
-								className="bg-yellow-500 h-10 w-40 rounded-3xl border-1 border-black font-bold hover:bg-white"
-								onClick={() => setShowPopup(true)}
-							>
-								Add Expense
-							</button>
-						</div>
-					</div>
+          <div className="mt-2 h-[500px] overflow-auto">
+            <table className="mx-auto my-auto table-container">
+              <thead className="h-10 table-header">
+                <tr>
+                  <th style={{ width: "5%" }}>#</th>
+                  <th style={{ width: "5%" }}>Paid</th>
+                  <th style={{ width: "20%" }}>Amount to Pay</th>
+                  <th style={{ width: "25%" }}>Description</th>
+                  <th style={{ width: "10%" }}>Frequency</th>
 
-					<div className="mt-2 h-[500px] overflow-auto">
-						<table className="mx-auto my-auto table-container">
-							<thead className="h-10 table-header">
-								<tr>
-									<th style={{ width: "5%" }}>#</th>
-									<th style={{ width: "5%" }}>Paid</th>
-									<th style={{ width: "20%" }}>
-										Amount to Pay
-									</th>
-									<th style={{ width: "25%" }}>
-										Description
-									</th>
-									<th style={{ width: "10%" }}>Frequency</th>
+                  <th style={{ width: "5%" }}>Edit</th>
+                  <th style={{ width: "5%" }}>Delete</th>
+                </tr>
+              </thead>
+              <tbody className="h-10 table-body">
+                {expenses.map((expense, index) => (
+                  <tr key={expense.expense_id}>
+                    <td>
+                      <div className="flex items-center justify-center">
+                        {index + 1}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 bg-yellow-500"
+                          onChange={handlePaidStatus}
+                          checked={expense.paid}
+                          readOnly
+                        />
+                      </div>
+                    </td>
+                    <td>Php {parseFloat(expense.amount).toFixed(2)}</td>
+                    <td>{expense.description}</td>
+                    <td>{expense.frequency}</td>
+                    <td>
+                      <div className="flex items-center justify-center">
+                        <img
+                          src="/images/edit.png"
+                          alt="edit"
+                          className="w-7 h-7 grayscale hover:grayscale-0"
+                          onClick={() => handleUpdate(expense)}
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex items-center justify-center">
+                        <img
+                          src="/images/delete.png"
+                          alt="delete"
+                          className="w-7 h-7 grayscale hover:grayscale-0"
+                          onClick={() => deleteHandling(expense)}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <Footer />
+      </div>
 
-									<th style={{ width: "5%" }}>Edit</th>
-									<th style={{ width: "5%" }}>Delete</th>
-								</tr>
-							</thead>
-							<tbody className="h-10 table-body">
-								<tr>
-									<td>
-										<div className="flex items-center justify-center">
-											1
-										</div>
-									</td>
-									<td>
-										<div className="flex items-center justify-center">
-											<input
-												type="checkbox"
-												className="w-5 h-5 bg-yellow-500"
-												onChange={handlePaidStatus}
-												checked={expenseData.paid}
-											/>
-										</div>
-									</td>
-									<td>Php 100.00</td>
-									<td>Groceries</td>
-									<td>Monthly</td>
+      {/* Pop-up */}
+      {showPopup && (
+        <ShowPopup
+          title="Add Expense"
+          expenseData={expenseData}
+          handleChange={handleChange}
+          closePopup={closePopup}
+          handlePopUpPaidChange={handlePopUpPaidChange}
+          handleSave={handleSave}
+        />
+      )}
 
-									<td>
-										<div className="flex items-center justify-center">
-											<img
-												src="/images/edit.png"
-												alt="edit"
-												className="w-7 h-7 grayscale hover:grayscale-0"
-												onClick={() =>
-													setShowUpdatePopup(true)
-												}
-											/>
-										</div>
-									</td>
-									<td>
-										<div className="flex items-center justify-center">
-											<img
-												src="/images/delete.png"
-												alt="delete"
-												className="w-7 h-7 grayscale hover:grayscale-0"
-												onClick={() =>
-													setShowDeletePopup(true)
-												}
-											/>
-										</div>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<Footer />
-			</div>
+      {/* Update Pop Up */}
+      {showUpdatePopup && (
+        <ShowPopup
+          title="Update Expense"
+          expenseData={expenseData}
+          handleChange={handleChange}
+          closePopup={closePopup}
+          handlePopUpPaidChange={handlePopUpPaidChange}
+          handleSave={handleUpdate}
+        />
+      )}
 
-			{/* Pop-up */}
-			{showPopup && (
-				<ShowPopup
-					title="Add Expense"
-					expenseData={expenseData}
-					handleChange={handleChange}
-					closePopup={closePopup}
-					handlePopUpPaidChange={handlePopUpPaidChange}
-					handleSave={handleSave}
-				/>
-			)}
+      {/* Delete Pop Up */}
+      {showDeletePopup && (
+        <DeletePopUp
+          title="expense"
+          handleDelete={handleDelete}
+          closePopup={() => setShowDeletePopup(false)}
+          row={toBeDeleted}
+        />
+      )}
 
-			{/* Update Pop Up */}
-			{showUpdatePopup && (
-				<ShowPopup
-					title="Update Expense"
-					expenseData={expenseData}
-					handleChange={handleChange}
-					closePopup={closePopup}
-					handlePopUpPaidChange={handlePopUpPaidChange}
-					handleSave={handleSave}
-				/>
-			)}
-
-			{/* Delete Pop Up */}
-			{showDeletePopup && (
-				<DeletePopUp
-					title="expense"
-					handleDelete={handleDelete}
-					closePopup={() => setShowDeletePopup(false)}
-				/>
-			)}
-
-			{/* Error Pop Up */}
-			{showErrorPopup && (
-				<ErrorPopup setShowErrorPopup={setShowErrorPopup} />
-			)}
-		</div>
-	);
+      {/* Error Pop Up */}
+      {showErrorPopup && <ErrorPopup setShowErrorPopup={setShowErrorPopup} />}
+    </div>
+  );
 }
 
 export default Expenses;

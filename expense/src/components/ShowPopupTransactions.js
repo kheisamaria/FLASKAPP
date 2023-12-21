@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ConfirmPopup from "./ConfirmPopup";
 
-const ShowPopup = ({
+const ShowPopupTransactions = ({
 	title,
 	transactionData,
 	handleChange,
@@ -38,11 +38,11 @@ const ShowPopup = ({
 							</div>
 							<div className="w-1/2">
 								<label className="block text-md mb-1">
-									Category
+									Payment Method
 								</label>
 								<select
 									className="h-[50px] w-full border border-gray-300 p-2 mb-4"
-									name="category"
+									name="payment_method"
 									value={transactionData.category}
 									onChange={handleChange}
 								>
@@ -101,4 +101,4 @@ const ShowPopup = ({
 	);
 };
 
-export default ShowPopup;
+export default ShowPopupTransactions;

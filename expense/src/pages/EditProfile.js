@@ -61,7 +61,7 @@ function EditProfile() {
 	return (
 		<div className="h-screen w-screen">
 			<div className="h-screen w-screen flex flex-row">
-				<div className="h-full w-1/5 px-32 flex bg-blue-950 py-20">
+				<div className="h-screen w-1/5 px-32 flex bg-blue-950 py-20">
 					<VerticalNavBar
 						isSettingsClicked={isSettingsClicked}
 						handleSettingsClick={handleSettingsClick}
@@ -84,12 +84,12 @@ function EditProfile() {
 						</div>
 					</div>
 
-					<div className=" h-fit w-full flex flex-col items-start justify-center px-60">
-						<div className="w-full h-44 my-5 flex items-center justify-center ">
+					<div className=" h-[700px] w-full flex flex-col items-start justify-center px-60">
+						<div className="w-full h-40 my-5 flex items-center justify-center ">
 							<img
 								src="/images/profile.png"
 								alt="profile"
-								className="h-44 w-44"
+								className="h-40 w-40"
 							/>
 						</div>
 						<form className="w-full" onSubmit={handleConfirmPopup}>
@@ -184,12 +184,12 @@ function EditProfile() {
 										/>
 									</div>
 								</div>
-								<div className="flex flex-col items-end justify-start mt-2 ">
+								<div className="flex flex-col items-end justify-start mt-1 ">
 									<button
 										type="submit"
 										className="bg-blue-950 text-white h-12 w-1/3 rounded-lg shadow-lg mt-3"
 									>
-										Register
+										Update Profile
 									</button>
 									<div
 										className="my-3 italic text-sm flex justify-end items-end mb-9 opacity-60 hover:opacity-100 hover:text-red-500"

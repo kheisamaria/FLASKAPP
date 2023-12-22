@@ -1,4 +1,5 @@
 import axios from "axios";
+import moment from 'moment-timezone';
 import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../UserContext";
 import DeletePopUp from "../components/DeletePopUp";
@@ -61,8 +62,10 @@ function Savings() {
       return;
     }
 
-    const currentDate = new Date().toISOString().split('T')[0];
-    const currentTime = new Date().toISOString().split('T')[1].split('.')[0];
+    // Get the current date and time in Philippine Standard Time
+    const now = moment().tz("Asia/Manila");
+    const currentDate = now.format('YYYY-MM-DD');
+    const currentTime = now.format('HH:mm:ss');
 
     const newData = {
       ...savingsData,
@@ -85,8 +88,6 @@ function Savings() {
     closePopup();
   };
 
-
-  // Read savings data
   // Read savings data
   const fetchSavings = () => {
     axios

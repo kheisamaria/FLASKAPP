@@ -368,23 +368,6 @@ END$$
 DELIMITER ;
 
 
--- Update the balance of the user after every expense
-DELIMITER //
-CREATE TRIGGER after_insert_expense
-AFTER INSERT ON expenses
-FOR EACH ROW
-BEGIN
-    DECLARE user_balance DECIMAL(10, 2);
-    SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
-    
-    -- Subtract the amount from the user's balance if the expense is paid
-    IF NEW.paid THEN
-        UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
-    END IF;
-END;
-//
-DELIMITER ;
-
 
 -- Trigger to update balance after updating an expense
 DELIMITER //
@@ -402,7 +385,6 @@ END;
 DELIMITER ;
 
 
--- Procedure to delete an expense
 DELIMITER $$
 CREATE PROCEDURE delete_expense(IN p_expense_id INT)
 BEGIN
@@ -420,14 +402,33 @@ BEGIN
     -- If the expense is paid, subtract the amount from the user's balance
     IF is_expense_paid THEN
         -- Retrieve the current user balance
-        SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+        SELECT balance INTO user_balance FROM users WHERE user_id = OLD.user_id;
         -- Add the expense amount back to the user's balance
-        UPDATE users SET balance = user_balance + expense_amount WHERE user_id = NEW.user_id;
+        UPDATE users SET balance = user_balance + expense_amount WHERE user_id = OLD.user_id;
     END IF;
 
     SELECT p_expense_id AS expense_id;
 END$$
 DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER after_delete_expense
+AFTER DELETE ON expenses
+FOR EACH ROW
+BEGIN
+    -- Check if the expense was paid
+    IF OLD.paid = 1 THEN
+        -- Retrieve the current user balance
+        SELECT balance INTO @user_balance FROM users WHERE user_id = OLD.user_id;
+
+        -- Add the expense amount back to the user's balance
+        UPDATE users SET balance = @user_balance + OLD.amount WHERE user_id = OLD.user_id;
+    END IF;
+END;
+//
+DELIMITER ;
+
+
 
 
 

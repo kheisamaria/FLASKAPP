@@ -110,6 +110,26 @@ BEGIN
 END$$
 DELIMITER ;
 
+-- Trigger to update balance after updating a transaction
+DELIMITER //
+CREATE TRIGGER after_update_transaction_balance
+AFTER UPDATE ON transactions
+FOR EACH ROW
+BEGIN
+    DECLARE user_balance DECIMAL(10, 2);
+
+    -- Check if the amount was updated
+    IF NEW.amount != OLD.amount THEN
+        -- Retrieve the current user balance
+        SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+
+        -- Subtract the difference between old and new amounts from the user's balance
+        UPDATE users SET balance = user_balance - (NEW.amount - OLD.amount) WHERE user_id = NEW.user_id;
+    END IF;
+END;
+//
+DELIMITER ;
+
 -- Update the balance of the user after every transaction
 DELIMITER //
 CREATE TRIGGER after_insert_transaction
@@ -131,6 +151,24 @@ BEGIN
     SELECT p_transaction_id AS transaction_id;
 END$$
 DELIMITER ;
+
+-- Update the balance of the user after deleting a transaction
+DELIMITER //
+CREATE TRIGGER after_delete_transaction
+AFTER DELETE ON transactions
+FOR EACH ROW
+BEGIN
+    DECLARE user_balance DECIMAL(10, 2);
+
+    -- Retrieve the current user balance
+    SELECT balance INTO user_balance FROM users WHERE user_id = OLD.user_id;
+
+    -- Add the transaction amount back to the user's balance
+    UPDATE users SET balance = user_balance + OLD.amount WHERE user_id = OLD.user_id;
+END;
+//
+DELIMITER ;
+
 
 -- View to get users with their transactions
 CREATE VIEW users_with_transactions AS
@@ -285,6 +323,11 @@ BEGIN
     INSERT INTO expenses (user_id, amount, description, frequency, paid)
     VALUES (p_user_id, p_amount, p_description, p_frequency, p_paid);
 
+    -- Update user balance based on the paid status
+    IF p_paid THEN
+        UPDATE users SET balance = balance - p_amount WHERE user_id = p_user_id;
+    END IF;
+
     SELECT LAST_INSERT_ID() AS expense_id;
 END$$
 DELIMITER ;
@@ -300,14 +343,30 @@ CREATE PROCEDURE update_expense(
     IN p_paid BOOLEAN
 )
 BEGIN
+    -- Retrieve the old amount and paid status
+    DECLARE old_amount DECIMAL(10, 2);
+    DECLARE old_paid BOOLEAN;
+    SELECT amount, paid INTO old_amount, old_paid FROM expenses WHERE expense_id = p_expense_id;
+
+    -- Update expenses table
     UPDATE expenses
     SET user_id = p_user_id, amount = p_amount,
         description = p_description, frequency = p_frequency, paid = p_paid
     WHERE expense_id = p_expense_id;
 
+    -- Update user balance based on changes in paid status and amount
+    IF old_paid THEN
+        UPDATE users SET balance = balance + old_amount WHERE user_id = p_user_id;
+    END IF;
+
+    IF p_paid THEN
+        UPDATE users SET balance = balance - p_amount WHERE user_id = p_user_id;
+    END IF;
+
     SELECT p_expense_id AS expense_id;
 END$$
 DELIMITER ;
+
 
 -- Update the balance of the user after every expense
 DELIMITER //
@@ -317,20 +376,60 @@ FOR EACH ROW
 BEGIN
     DECLARE user_balance DECIMAL(10, 2);
     SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
-    UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
+    
+    -- Subtract the amount from the user's balance if the expense is paid
+    IF NEW.paid THEN
+        UPDATE users SET balance = user_balance - NEW.amount WHERE user_id = NEW.user_id;
+    END IF;
 END;
 //
 DELIMITER ;
+
+
+-- Trigger to update balance after updating an expense
+DELIMITER //
+CREATE TRIGGER after_update_expense_balance
+AFTER UPDATE ON expenses
+FOR EACH ROW
+BEGIN
+    -- Check if the amount was updated and paid status changed from false to true
+    IF NEW.amount != OLD.amount AND OLD.paid = 0 AND NEW.paid = 1 THEN
+        -- Subtract the expense amount from the user's balance
+        UPDATE users SET balance = balance - NEW.amount WHERE user_id = NEW.user_id;
+    END IF;
+END;
+//
+DELIMITER ;
+
 
 -- Procedure to delete an expense
 DELIMITER $$
 CREATE PROCEDURE delete_expense(IN p_expense_id INT)
 BEGIN
+    -- Declare the variables at the beginning
+    DECLARE expense_amount DECIMAL(10, 2);
+    DECLARE is_expense_paid BOOLEAN;
+    DECLARE user_balance DECIMAL(10, 2);
+
+    -- Retrieve the amount and paid status of the expense
+    SELECT amount, paid INTO expense_amount, is_expense_paid FROM expenses WHERE expense_id = p_expense_id;
+
+    -- Delete the expense
     DELETE FROM expenses WHERE expense_id = p_expense_id;
+
+    -- If the expense is paid, subtract the amount from the user's balance
+    IF is_expense_paid THEN
+        -- Retrieve the current user balance
+        SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+        -- Add the expense amount back to the user's balance
+        UPDATE users SET balance = user_balance + expense_amount WHERE user_id = NEW.user_id;
+    END IF;
 
     SELECT p_expense_id AS expense_id;
 END$$
 DELIMITER ;
+
+
 
 -- View to get users with their expenses
 CREATE VIEW users_with_expenses AS

@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ConfirmPopup from "./ConfirmPopup";
 
-const ShowPopup = ({
-	title,
-	expenseData,
-	handleChange,
-	closePopup,
-	handlePopUpPaidChange,
-	handleSave,
-}) => {
+const ShowPopup = ({ expenseData, closePopup, handleUpdateExpenses }) => {
+	// Create a new state for duplicated savingsData
+	const [updatedExpensesData, setUpdatedExpensesData] = useState({
+		amount: 0,
+		description: "",
+		frequency: "",
+		paid: false,
+		...expenseData,
+	});
+
+	// Update the state when savingsData changes
+	useEffect(() => {
+		setUpdatedExpensesData({ ...expenseData });
+	}, [expenseData]);
+
+	const handleChange = (e) => {
+		// Handle changes in the duplicated savingsData
+		const { name, value } = e.target;
+		setUpdatedExpensesData((prevData) => ({
+			...prevData,
+			[name]: value,
+		}));
+	};
+
+	const handleCheckboxChange = (e) => {
+		const { checked } = e.target;
+		setUpdatedExpensesData((prevData) => ({
+			...prevData,
+			paid: checked,
+		}));
+	};
+
 	const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+
 	const handleConfirm = () => {
+		handleUpdateExpenses(updatedExpensesData);
 		setShowConfirmPopup(false);
-		handleSave();
 	};
 
 	return (
@@ -21,7 +46,7 @@ const ShowPopup = ({
 				<div className="absolute w-full h-full bg-gray-900 opacity-50 flex items-center"></div>
 				<div className="bg-white p-8 w-[800px] h-[530px] rounded-lg z-10">
 					<div className="flex justify-center font-bold text-2xl mt-2">
-						{title}
+						Update Expense
 					</div>
 					<div className="mt-6">
 						<div className="flex flex-row w-full gap-x-6">
@@ -33,7 +58,7 @@ const ShowPopup = ({
 									type="number"
 									className="h-[50px] w-full border border-gray-300 p-2 mb-4"
 									name="amount"
-									value={expenseData.amount}
+									value={updatedExpensesData.amount}
 									onChange={handleChange}
 								/>
 							</div>
@@ -44,7 +69,7 @@ const ShowPopup = ({
 								<select
 									className="h-[50px] w-full border border-gray-300 p-2 mb-4"
 									name="frequency"
-									value={expenseData.frequency}
+									value={updatedExpensesData.frequency}
 									onChange={handleChange}
 								>
 									<option value="">Please Select...</option>
@@ -64,7 +89,7 @@ const ShowPopup = ({
 								type="text"
 								className="h-[150px] w-full border border-gray-300 p-2 mb-4"
 								name="description"
-								value={expenseData.description}
+								value={updatedExpensesData.description}
 								onChange={handleChange}
 							/>
 						</div>
@@ -75,8 +100,8 @@ const ShowPopup = ({
 							<input
 								type="checkbox"
 								className="h-4 w-4 mx-2"
-								checked={expenseData.paid}
-								onChange={handlePopUpPaidChange}
+								checked={updatedExpensesData.paid}
+								onChange={handleCheckboxChange}
 							/>
 						</div>
 					</div>
@@ -89,7 +114,7 @@ const ShowPopup = ({
 						</button>
 						<button
 							className="bg-yellow-500 text-white px-4 py-2 ml-4 rounded-xl w-1/3 opacity-75 hover:opacity-100"
-							onClick={handleSave}
+							onClick={() => setShowConfirmPopup(true)}
 						>
 							Save
 						</button>

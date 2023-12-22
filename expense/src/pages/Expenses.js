@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import DeletePopUp from "../components/DeletePopUp";
 import axios from "axios";
 import UserContext from "../UserContext";
+import UpdatePopupExpenses from "../components/UpdatePopupExpenses";
 
 // naay error sa pagcount sa unpaid expenses
 function Expenses() {
@@ -16,6 +17,7 @@ function Expenses() {
 	const [showPopup, setShowPopup] = useState(false);
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+	const [updateData, setUpdateData] = useState({});
 	const [showDeletePopup, setShowDeletePopup] = useState(false);
 	const [expenses, setExpenses] = useState([]);
 	const [toBeDeleted, setToBeDeleted] = useState({});
@@ -60,7 +62,7 @@ function Expenses() {
 		console.log("Paid status changed.");
 	};
 
-	// Create savings data
+	// Create expenses data
 	const formData = {
 		amount: 0,
 		description: "",
@@ -124,7 +126,37 @@ function Expenses() {
 	};
 
 	// Update expenses data
-	const handleUpdate = (expense) => {};
+	const handleUpdate = (expense) => {
+		setUpdateData({
+			amount: expense.amount,
+			description: expense.description,
+			frequency: expense.frequency,
+			paid: expense.paid,
+			user_id: expense.user_id,
+			expenses_id: expense.expenses_id,
+		});
+		setShowUpdatePopup(true);
+	};
+
+	const handleUpdateExpenses = (updatedExpenesesData) => {
+		// axios
+		// 	.put(
+		// 		`http://localhost:5000/savings/${updatedSavingsData.savings_id}`,
+		// 		{
+		// 			...updatedSavingsData,
+		// 		}
+		// 	)
+		// 	.then(() => {
+		// 		alert("Savings updated.");
+		// 		fetchSavings();
+		// 	})
+		// 	.catch((error) => {
+		// 		console.log(error);
+		// 	});
+
+		console.log("Updated expense:", updatedExpenesesData);
+		closePopup();
+	};
 
 	// Delete expenses data
 	const deleteHandling = (expense) => {
@@ -277,13 +309,11 @@ function Expenses() {
 
 			{/* Update Pop Up */}
 			{showUpdatePopup && (
-				<ShowPopup
-					title="Update Expense"
-					expenseData={expenseData}
-					handleChange={handleChange}
+				<UpdatePopupExpenses
+					expenseData={updateData}
 					closePopup={closePopup}
+					handleUpdateExpenses={handleUpdateExpenses}
 					handlePopUpPaidChange={handlePopUpPaidChange}
-					handleSave={handleUpdate}
 				/>
 			)}
 

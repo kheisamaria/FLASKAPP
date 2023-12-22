@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import UserContext from "../UserContext";
 
 const NavBar = () => {
+  const { updateUser } = useContext(UserContext);
   const [isSettingsClicked, setSettingsClicked] = useState(false);
 
   const handleSettingsClick = () => {
@@ -11,6 +13,10 @@ const NavBar = () => {
     } else {
       setSettingsClicked(true);
     }
+  };
+
+  const handleLogout = () => {
+    updateUser(null);
   };
 
   return (
@@ -51,7 +57,12 @@ const NavBar = () => {
               </div>
               <div>
                 <Link to="/" className="pr-4">
-                  <button className="h-12 w-28 hover:text-white">Logout</button>
+                  <button
+                    className="h-12 w-28 hover:text-white"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
                 </Link>
               </div>
             </div>

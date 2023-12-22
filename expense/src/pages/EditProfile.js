@@ -8,7 +8,8 @@ import VerticalNavBar from "../components/VerticalNavBar";
 import UserContext from "../UserContext";
 
 function EditProfile() {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
+  const navigate = useNavigate();
   const [isSettingsClicked, setSettingsClicked] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [showDeleteAccountPopup, setShowDeleteAccountPopup] = useState(false);
@@ -89,7 +90,14 @@ function EditProfile() {
         balance: profile.balance,
       })
       .then(() => {
+        setProfile((prevProfile) => ({
+          ...prevProfile,
+          password: "",
+          newPassword: "",
+          confirmNewPassword: "",
+        }));
         fetchUserData();
+        alert("Profile Updated!");
       })
       .catch((error) => {
         console.log(error);
@@ -98,6 +106,11 @@ function EditProfile() {
 
   // Delete
   const handleDelete = () => {
+    axios.delete(`http://localhost:5000/users/${user}`).then(() => {
+      alert("Account Deleted");
+      setUser(null);
+      navigate("/");
+    });
     console.log("Account Deleted");
   };
 
@@ -111,8 +124,6 @@ function EditProfile() {
       .get(`http://localhost:5000/users/${user}`)
       .then((response) => {
         setProfile(response.data);
-        console.log(response.data);
-        console.log("profile", profile);
       })
       .catch((error) => {
         console.log(error);
@@ -209,6 +220,7 @@ function EditProfile() {
                     name="currentPassword"
                     onChange={handleChange}
                     className="h-14 w-full border border-blue-100 outline-none rounded-lg px-2 shadow-md"
+                    value={profile.currentPassword}
                     // required
                   />
                   {!isPasswordCorrect && (
@@ -225,6 +237,7 @@ function EditProfile() {
                       name="newPassword"
                       onChange={handleChange}
                       className="h-14 w-full border border-blue-100 outline-none rounded-lg px-2 shadow-md"
+                      value={profile.newPassword}
                       // required
                     />
                   </div>
@@ -237,6 +250,7 @@ function EditProfile() {
                       name="confirmNewPassword"
                       onChange={handleChange}
                       className="h-14 w-full border border-blue-100 outline-none rounded-lg px-2 shadow-md"
+                      value={profile.confirmNewPassword}
                       // required
                     />
                     {!passwordMatch && (

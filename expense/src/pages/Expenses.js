@@ -313,7 +313,6 @@ function Expenses() {
 					expenseData={updateData}
 					closePopup={closePopup}
 					handleUpdateExpenses={handleUpdateExpenses}
-					handlePopUpPaidChange={handlePopUpPaidChange}
 				/>
 			)}
 

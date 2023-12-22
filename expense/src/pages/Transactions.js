@@ -1,5 +1,5 @@
 import axios from "axios";
-import moment from 'moment-timezone';
+import moment from "moment-timezone";
 import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../UserContext";
 import DeletePopUp from "../components/DeletePopUp";
@@ -8,6 +8,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import NavBar from "../components/NavBar";
 import ShowPopup from "../components/ShowPopupTransactions";
+import UpdatePopupTransactions from "../components/UpdatePopupTransactions";
 
 function Transactions() {
 	const { user } = useContext(UserContext);
@@ -16,6 +17,7 @@ function Transactions() {
 	const [showUpdatePopup, setShowUpdatePopup] = useState(false);
 	const [showDeletePopup, setShowDeletePopup] = useState(false);
 	const [transactions, setTransactions] = useState([]);
+	const [updateData, setUpdateData] = useState({});
 	const [toBeDeleted, setToBeDeleted] = useState({});
 	const [totalAmount, setTotalAmount] = useState(0);
 
@@ -56,15 +58,18 @@ function Transactions() {
 	};
 
 	const handleSave = () => {
-		if (transactionData.description === "" || transactionData.payment_method === "") {
+		if (
+			transactionData.description === "" ||
+			transactionData.payment_method === ""
+		) {
 			setShowErrorPopup(true);
 			return;
 		}
 
 		// Get the current date and time in Philippine Standard Time
 		const now = moment().tz("Asia/Manila");
-		const currentDate = now.format('YYYY-MM-DD');
-		const currentTime = now.format('HH:mm:ss');
+		const currentDate = now.format("YYYY-MM-DD");
+		const currentTime = now.format("HH:mm:ss");
 
 		const newData = {
 			...transactionData,
@@ -87,8 +92,6 @@ function Transactions() {
 		closePopup();
 	};
 
-
-
 	// Read Transaction data
 	const fetchTransactions = () => {
 		axios
@@ -102,7 +105,9 @@ function Transactions() {
 					let month = dateObj.getMonth() + 1; // getMonth() is zero-based
 					let day = dateObj.getDate();
 					// Format the date
-					let formattedDate = `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
+					let formattedDate = `${year}-${
+						month < 10 ? "0" : ""
+					}${month}-${day < 10 ? "0" : ""}${day}`;
 
 					return {
 						...transaction,
@@ -111,7 +116,10 @@ function Transactions() {
 					};
 				});
 
-				const sum = transactionData.reduce((acc, transaction) => acc + transaction.amount, 0);
+				const sum = transactionData.reduce(
+					(acc, transaction) => acc + transaction.amount,
+					0
+				);
 				setTotalAmount(sum);
 				setTransactions(transactionData);
 			})
@@ -119,8 +127,34 @@ function Transactions() {
 				console.log(error);
 			});
 	};
+
 	// Update Transaction data
-	const handleUpdate = () => { };
+	const handleUpdate = (transaction) => {
+		setUpdateData({
+			amount: transaction.amount,
+			description: transaction.description,
+			payment_method: transaction.payment_method,
+			user_id: transaction.user_id,
+			transactions_id: transaction.transactions_id,
+		});
+		setShowUpdatePopup(true);
+	};
+
+	const handleUpdateTransaction = (updatedTransactionData) => {
+		// axios
+		// 	.put(
+		// 		`http://localhost:5000/transactions/${updatedTransactionData.transactions_id}`,
+		// 		updatedTransactionData
+		// 	)
+		// 	.then(() => {
+		// 		fetchTransactions();
+		// 	})
+		// 	.catch((error) => {
+		// 		console.log(error);
+		// 	});
+		console.log("Transaction updated:", updatedTransactionData);
+		closePopup();
+	};
 
 	// Delete Transaction data
 	const deleteHandling = (transaction) => {
@@ -211,14 +245,11 @@ function Transactions() {
 													src="/images/edit.png"
 													alt="edit"
 													className="w-7 h-7 grayscale hover:grayscale-0"
-													onClick={() => {
-														setTransactionData(
+													onClick={() =>
+														handleUpdate(
 															transaction
-														);
-														setShowUpdatePopup(
-															true
-														);
-													}}
+														)
+													}
 												/>
 											</div>
 										</td>
@@ -258,12 +289,10 @@ function Transactions() {
 
 			{/* Update Pop Up */}
 			{showUpdatePopup && (
-				<ShowPopup
-					title="Update Transaction"
-					transactionData={transactionData}
-					handleChange={handleChange}
+				<UpdatePopupTransactions
+					transactionData={updateData}
 					closePopup={closePopup}
-					handleSave={handleUpdate}
+					handleUpdateTransaction={handleUpdateTransaction}
 				/>
 			)}
 

@@ -1,12 +1,13 @@
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import React, { useState, useEffect, useContext } from "react";
-import ShowPopup from "../components/ShowPopupSavings";
-import ErrorPopup from "../components/ErrorPopup";
-import DeletePopUp from "../components/DeletePopUp";
-import Header from "../components/Header";
 import axios from "axios";
+import moment from 'moment-timezone';
+import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../UserContext";
+import DeletePopUp from "../components/DeletePopUp";
+import ErrorPopup from "../components/ErrorPopup";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import NavBar from "../components/NavBar";
+import ShowPopup from "../components/ShowPopupSavings";
 
 function Savings() {
   const { user } = useContext(UserContext);
@@ -61,8 +62,10 @@ function Savings() {
       return;
     }
 
-    const currentDate = new Date().toLocaleDateString();
-    const currentTime = new Date().toLocaleTimeString();
+    // Get the current date and time in Philippine Standard Time
+    const now = moment().tz("Asia/Manila");
+    const currentDate = now.format('YYYY-MM-DD');
+    const currentTime = now.format('HH:mm:ss');
 
     const newData = {
       ...savingsData,
@@ -72,8 +75,16 @@ function Savings() {
 
     console.log("Saving data to the database:", newData);
 
+    axios
+      .post(`http://localhost:5000/savings`, newData)
+      .then(() => {
+        fetchSavings();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
     setSavingsData(formData);
-    handleCreate();
     closePopup();
   };
 
@@ -82,10 +93,22 @@ function Savings() {
     axios
       .get(`http://localhost:5000/savings/user/${user}`)
       .then((response) => {
-        const savingsData = response.data.map((saving) => ({
-          ...saving,
-          amount: parseFloat(saving.amount),
-        }));
+        const savingsData = response.data.map((saving) => {
+          // Convert the date string to a Date object
+          let dateObj = new Date(saving.date);
+          // Get the year, month, and day
+          let year = dateObj.getFullYear();
+          let month = dateObj.getMonth() + 1; // getMonth() is zero-based
+          let day = dateObj.getDate();
+          // Format the date
+          let formattedDate = `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
+
+          return {
+            ...saving,
+            amount: parseFloat(saving.amount),
+            date: formattedDate, // Use the formatted date
+          };
+        });
 
         const sum = savingsData.reduce((acc, saving) => acc + saving.amount, 0);
         setTotalAmount(sum);
@@ -96,17 +119,7 @@ function Savings() {
       });
   };
 
-  // Create savings data
-  const handleCreate = () => {
-    axios
-      .post(`http://localhost:5000/savings`, savingsData)
-      .then(() => {
-        fetchSavings();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+
 
   // Update savings data
   const handleUpdate = (saving) => {

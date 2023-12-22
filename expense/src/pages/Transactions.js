@@ -1,12 +1,13 @@
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import React, { useEffect, useState, useContext } from "react";
-import ShowPopup from "../components/ShowPopupTransactions";
-import ErrorPopup from "../components/ErrorPopup";
-import DeletePopUp from "../components/DeletePopUp";
-import Header from "../components/Header";
 import axios from "axios";
+import moment from 'moment-timezone';
+import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../UserContext";
+import DeletePopUp from "../components/DeletePopUp";
+import ErrorPopup from "../components/ErrorPopup";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import NavBar from "../components/NavBar";
+import ShowPopup from "../components/ShowPopupTransactions";
 
 function Transactions() {
 	const { user } = useContext(UserContext);
@@ -55,16 +56,15 @@ function Transactions() {
 	};
 
 	const handleSave = () => {
-		if (
-			transactionData.description === "" ||
-			transactionData.payment_method === ""
-		) {
+		if (transactionData.description === "" || transactionData.payment_method === "") {
 			setShowErrorPopup(true);
 			return;
 		}
 
-		const currentDate = new Date().toLocaleDateString();
-		const currentTime = new Date().toLocaleTimeString();
+		// Get the current date and time in Philippine Standard Time
+		const now = moment().tz("Asia/Manila");
+		const currentDate = now.format('YYYY-MM-DD');
+		const currentTime = now.format('HH:mm:ss');
 
 		const newData = {
 			...transactionData,
@@ -74,47 +74,53 @@ function Transactions() {
 
 		console.log("Saving data to the database:", newData);
 
-		setTransactionData(formData);
-		handleCreate();
-		closePopup();
-	};
-
-	// Create Transaction data
-	const handleCreate = () => {
 		axios
-			.post("http://localhost:5000/transactions", transactionData)
+			.post(`http://localhost:5000/transactions`, newData)
 			.then(() => {
 				fetchTransactions();
 			})
 			.catch((error) => {
 				console.log(error);
 			});
+
+		setTransactionData(formData);
+		closePopup();
 	};
+
+
 
 	// Read Transaction data
 	const fetchTransactions = () => {
 		axios
 			.get(`http://localhost:5000/transactions/user/${user}`)
 			.then((response) => {
-				const transactionData = response.data.map((transaction) => ({
-					...transaction,
-					amount: parseFloat(transaction.amount),
-				}));
+				const transactionData = response.data.map((transaction) => {
+					// Convert the date string to a Date object
+					let dateObj = new Date(transaction.date);
+					// Get the year, month, and day
+					let year = dateObj.getFullYear();
+					let month = dateObj.getMonth() + 1; // getMonth() is zero-based
+					let day = dateObj.getDate();
+					// Format the date
+					let formattedDate = `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
 
-				const sum = transactionData.reduce(
-					(acc, transaction) => acc + transaction.amount,
-					0
-				);
+					return {
+						...transaction,
+						amount: parseFloat(transaction.amount),
+						date: formattedDate, // Use the formatted date
+					};
+				});
+
+				const sum = transactionData.reduce((acc, transaction) => acc + transaction.amount, 0);
 				setTotalAmount(sum);
-				setTransactions(response.data);
+				setTransactions(transactionData);
 			})
 			.catch((error) => {
 				console.log(error);
 			});
 	};
-
 	// Update Transaction data
-	const handleUpdate = () => {};
+	const handleUpdate = () => { };
 
 	// Delete Transaction data
 	const deleteHandling = (transaction) => {

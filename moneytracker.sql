@@ -42,7 +42,7 @@ BEGIN
     UPDATE users
     SET full_name = p_full_name, age = p_age, email = p_email,
         username = p_username, password = p_password, balance = p_balance
-    WHERE user_id = p_user_id;  
+    WHERE user_id = p_user_id;
 
     SELECT p_user_id AS user_id;
 END //
@@ -52,11 +52,251 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE delete_user(IN p_user_id INT)
 BEGIN
-    DELETE FROM users WHERE user_id = p_user_id; 
+    DELETE FROM users WHERE user_id = p_user_id;
 
     SELECT p_user_id AS user_id;
 END //
 DELIMITER ;
+
+
+-- Table to store savings information
+CREATE TABLE savings (
+    savings_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    description VARCHAR(255),
+    date DATE NOT NULL,
+    time TIME NOT NULL,
+    category VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Procedure to create a new savings entry
+DELIMITER $$
+CREATE PROCEDURE create_savings(
+    IN p_user_id INT,
+    IN p_amount DECIMAL(10, 2),
+    IN p_description VARCHAR(255),
+    IN p_date DATE,
+    IN p_time TIME,
+    IN p_category VARCHAR(255)
+)
+BEGIN
+    INSERT INTO savings (user_id, amount, description, date, time, category)
+    VALUES (p_user_id, p_amount, p_description, p_date, p_time, p_category);
+
+    SELECT LAST_INSERT_ID() AS savings_id;
+END$$
+DELIMITER ;
+
+-- Procedure to update savings information
+DELIMITER $$
+CREATE PROCEDURE update_savings(
+    IN p_savings_id INT,
+    IN p_user_id INT,
+    IN p_amount DECIMAL(10, 2),
+    IN p_description VARCHAR(255),
+    IN p_date DATE,
+    IN p_time TIME,
+    IN p_category VARCHAR(255)
+)
+BEGIN
+    UPDATE savings
+    SET user_id = p_user_id, amount = p_amount,
+        description = p_description, date = p_date, time = p_time, category = p_category
+    WHERE savings_id = p_savings_id;
+
+    SELECT p_savings_id AS savings_id;
+END$$
+DELIMITER ;
+
+-- Trigger to handle updates in the savings table
+DELIMITER //
+CREATE TRIGGER after_update_savings
+AFTER UPDATE ON savings
+FOR EACH ROW
+BEGIN
+    DECLARE user_balance DECIMAL(10, 2);
+
+    IF NEW.amount != OLD.amount THEN
+        SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
+
+        IF NEW.amount < OLD.amount THEN
+            UPDATE users SET balance = user_balance + (OLD.amount - NEW.amount) WHERE user_id = NEW.user_id;
+        ELSE
+            UPDATE users SET balance = user_balance - (NEW.amount - OLD.amount) WHERE user_id = NEW.user_id;
+        END IF;
+    END IF;
+END;
+//
+DELIMITER ;
+
+-- Procedure to delete a savings entry
+DELIMITER $$
+CREATE PROCEDURE delete_savings(IN p_savings_id INT)
+BEGIN
+    DELETE FROM savings WHERE savings_id = p_savings_id;
+
+    SELECT p_savings_id AS savings_id;
+END$$
+DELIMITER ;
+
+
+-- View to get users with their savings
+CREATE VIEW users_with_savings AS
+SELECT
+    u.user_id AS user_id,
+    u.full_name,
+    u.age,
+    u.email,
+    u.username,
+    u.password,
+    u.balance,
+    s.savings_id,
+    s.amount AS savings_amount,
+    s.description AS savings_description,
+    s.date AS savings_date,
+    s.time AS savings_time,
+    s.category AS savings_category
+FROM
+    users u
+INNER JOIN savings s ON u.user_id = s.user_id;
+
+
+-- Table to store expenses information
+CREATE TABLE expenses (
+    expense_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    description VARCHAR(255),
+    frequency VARCHAR(255),
+    paid BOOLEAN NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- Procedure to create a new expense
+DELIMITER $$
+CREATE PROCEDURE create_expense(
+    IN p_user_id INT,
+    IN p_amount DECIMAL(10, 2),
+    IN p_description VARCHAR(255),
+    IN p_frequency VARCHAR(255),
+    IN p_paid BOOLEAN
+)
+BEGIN
+    INSERT INTO expenses (user_id, amount, description, frequency, paid)
+    VALUES (p_user_id, p_amount, p_description, p_frequency, p_paid);
+
+    IF p_paid THEN
+        UPDATE users SET balance = balance - p_amount WHERE user_id = p_user_id;
+    END IF;
+
+    SELECT LAST_INSERT_ID() AS expense_id;
+END$$
+DELIMITER ;
+
+-- Procedure to update expense information
+DELIMITER $$
+CREATE PROCEDURE update_expense(
+    IN p_expense_id INT,
+    IN p_user_id INT,
+    IN p_amount DECIMAL(10, 2),
+    IN p_description VARCHAR(255),
+    IN p_frequency VARCHAR(255),
+    IN p_paid BOOLEAN
+)
+BEGIN
+    DECLARE old_amount DECIMAL(10, 2);
+    DECLARE old_paid BOOLEAN;
+    SELECT amount, paid INTO old_amount, old_paid FROM expenses WHERE expense_id = p_expense_id;
+
+    UPDATE expenses
+    SET user_id = p_user_id, amount = p_amount,
+        description = p_description, frequency = p_frequency, paid = p_paid
+    WHERE expense_id = p_expense_id;
+
+    IF old_paid THEN
+        UPDATE users SET balance = balance + old_amount WHERE user_id = p_user_id;
+    END IF;
+
+    IF p_paid THEN
+        UPDATE users SET balance = balance - p_amount WHERE user_id = p_user_id;
+    END IF;
+
+    SELECT p_expense_id AS expense_id;
+END$$
+DELIMITER ;
+
+
+
+-- Trigger to update balance after updating an expense
+DELIMITER //
+CREATE TRIGGER after_update_expense_balance
+AFTER UPDATE ON expenses
+FOR EACH ROW
+BEGIN
+    IF NEW.amount != OLD.amount AND OLD.paid = 0 AND NEW.paid = 1 THEN
+        UPDATE users SET balance = balance - NEW.amount WHERE user_id = NEW.user_id;
+    END IF;
+END;
+//
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE delete_expense(IN p_expense_id INT)
+BEGIN
+    DECLARE expense_amount DECIMAL(10, 2);
+    DECLARE is_expense_paid BOOLEAN;
+    DECLARE user_id INT;
+
+    SELECT amount, paid, user_id INTO expense_amount, is_expense_paid, user_id FROM expenses WHERE expense_id = p_expense_id;
+
+    DELETE FROM expenses WHERE expense_id = p_expense_id;
+
+    IF is_expense_paid THEN
+        UPDATE users SET balance = balance + expense_amount WHERE user_id = user_id;
+    END IF;
+
+    SELECT p_expense_id AS expense_id;
+END$$
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER after_delete_expense
+AFTER DELETE ON expenses
+FOR EACH ROW
+BEGIN
+    IF OLD.paid = 1 THEN
+        SELECT balance INTO @user_balance FROM users WHERE user_id = OLD.user_id;
+        UPDATE users SET balance = @user_balance + OLD.amount WHERE user_id = OLD.user_id;
+    END IF;
+END;
+//
+DELIMITER ;
+
+
+
+-- View to get users with their expenses
+CREATE VIEW users_with_expenses AS
+SELECT
+    u.user_id AS user_id,
+    u.full_name,
+    u.age,
+    u.email,
+    u.username,
+    u.password,
+    u.balance,
+    e.expense_id,
+    e.amount AS expense_amount,
+    e.description AS expense_description,
+    e.frequency AS expense_frequency,
+    e.paid AS expense_paid
+FROM
+    users u
+INNER JOIN expenses e ON u.user_id = e.user_id;
+
 
 
 
@@ -118,12 +358,8 @@ FOR EACH ROW
 BEGIN
     DECLARE user_balance DECIMAL(10, 2);
 
-    -- Check if the amount was updated
     IF NEW.amount != OLD.amount THEN
-        -- Retrieve the current user balance
         SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
-
-        -- Subtract the difference between old and new amounts from the user's balance
         UPDATE users SET balance = user_balance - (NEW.amount - OLD.amount) WHERE user_id = NEW.user_id;
     END IF;
 END;
@@ -160,10 +396,7 @@ FOR EACH ROW
 BEGIN
     DECLARE user_balance DECIMAL(10, 2);
 
-    -- Retrieve the current user balance
     SELECT balance INTO user_balance FROM users WHERE user_id = OLD.user_id;
-
-    -- Add the transaction amount back to the user's balance
     UPDATE users SET balance = user_balance + OLD.amount WHERE user_id = OLD.user_id;
 END;
 //
@@ -189,263 +422,3 @@ SELECT
 FROM
     users u
 INNER JOIN transactions t ON u.user_id = t.user_id;
-
-
--- Table to store savings information
-CREATE TABLE savings (
-    savings_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL,
-    description VARCHAR(255),
-    date DATE NOT NULL,
-    time TIME NOT NULL,
-    category VARCHAR(255), 
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
--- Procedure to create a new savings entry
-DELIMITER $$
-CREATE PROCEDURE create_savings(
-    IN p_user_id INT,
-    IN p_amount DECIMAL(10, 2),
-    IN p_description VARCHAR(255),
-    IN p_date DATE,
-    IN p_time TIME,
-    IN p_category VARCHAR(255)
-)
-BEGIN
-    INSERT INTO savings (user_id, amount, description, date, time, category)
-    VALUES (p_user_id, p_amount, p_description, p_date, p_time, p_category);
-
-    SELECT LAST_INSERT_ID() AS savings_id;
-END$$
-DELIMITER ;
-
--- Procedure to update savings information
-DELIMITER $$
-CREATE PROCEDURE update_savings(
-    IN p_savings_id INT,
-    IN p_user_id INT,
-    IN p_amount DECIMAL(10, 2),
-    IN p_description VARCHAR(255),
-    IN p_date DATE,
-    IN p_time TIME,
-    IN p_category VARCHAR(255) 
-)
-BEGIN
-    UPDATE savings
-    SET user_id = p_user_id, amount = p_amount,
-        description = p_description, date = p_date, time = p_time, category = p_category
-    WHERE savings_id = p_savings_id;
-
-    SELECT p_savings_id AS savings_id;
-END$$
-DELIMITER ;
-
--- Trigger to handle updates in the savings table
-DELIMITER //
-CREATE TRIGGER after_update_savings
-AFTER UPDATE ON savings
-FOR EACH ROW
-BEGIN
-    DECLARE user_balance DECIMAL(10, 2);
-
-    -- Check if the savings amount was updated
-    IF NEW.amount != OLD.amount THEN
-        -- Retrieve the current user balance
-        SELECT balance INTO user_balance FROM users WHERE user_id = NEW.user_id;
-
-        -- If the new amount is smaller, add the difference to the balance
-        IF NEW.amount < OLD.amount THEN
-            UPDATE users SET balance = user_balance + (OLD.amount - NEW.amount) WHERE user_id = NEW.user_id;
-        -- If the new amount is larger, subtract the difference from the balance
-        ELSE
-            UPDATE users SET balance = user_balance - (NEW.amount - OLD.amount) WHERE user_id = NEW.user_id;
-        END IF;
-    END IF;
-END;
-//
-DELIMITER ;
-
--- Procedure to delete a savings entry
-DELIMITER $$
-CREATE PROCEDURE delete_savings(IN p_savings_id INT)
-BEGIN
-    DELETE FROM savings WHERE savings_id = p_savings_id;
-
-    SELECT p_savings_id AS savings_id;
-END$$
-DELIMITER ;
-
-
--- View to get users with their savings
-CREATE VIEW users_with_savings AS
-SELECT
-    u.user_id AS user_id,
-    u.full_name,
-    u.age,
-    u.email,
-    u.username,
-    u.password,
-    u.balance,
-    s.savings_id,
-    s.amount AS savings_amount,
-    s.description AS savings_description,
-    s.date AS savings_date,
-    s.time AS savings_time,
-    s.category AS savings_category
-FROM
-    users u
-INNER JOIN savings s ON u.user_id = s.user_id;
-
-
--- Table to store expenses information
-CREATE TABLE expenses (
-    expense_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    amount DECIMAL(10, 2) NOT NULL,
-    description VARCHAR(255),
-    frequency VARCHAR(255),
-    paid BOOLEAN NOT NULL DEFAULT 0, 
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
--- Procedure to create a new expense
-DELIMITER $$
-CREATE PROCEDURE create_expense(
-    IN p_user_id INT,
-    IN p_amount DECIMAL(10, 2),
-    IN p_description VARCHAR(255),
-    IN p_frequency VARCHAR(255),
-    IN p_paid BOOLEAN
-)
-BEGIN
-    INSERT INTO expenses (user_id, amount, description, frequency, paid)
-    VALUES (p_user_id, p_amount, p_description, p_frequency, p_paid);
-
-    -- Update user balance based on the paid status
-    IF p_paid THEN
-        UPDATE users SET balance = balance - p_amount WHERE user_id = p_user_id;
-    END IF;
-
-    SELECT LAST_INSERT_ID() AS expense_id;
-END$$
-DELIMITER ;
-
--- Procedure to update expense information
-DELIMITER $$
-CREATE PROCEDURE update_expense(
-    IN p_expense_id INT,
-    IN p_user_id INT,
-    IN p_amount DECIMAL(10, 2),
-    IN p_description VARCHAR(255),
-    IN p_frequency VARCHAR(255),
-    IN p_paid BOOLEAN
-)
-BEGIN
-    -- Retrieve the old amount and paid status
-    DECLARE old_amount DECIMAL(10, 2);
-    DECLARE old_paid BOOLEAN;
-    SELECT amount, paid INTO old_amount, old_paid FROM expenses WHERE expense_id = p_expense_id;
-
-    -- Update expenses table
-    UPDATE expenses
-    SET user_id = p_user_id, amount = p_amount,
-        description = p_description, frequency = p_frequency, paid = p_paid
-    WHERE expense_id = p_expense_id;
-
-    -- Update user balance based on changes in paid status and amount
-    IF old_paid THEN
-        UPDATE users SET balance = balance + old_amount WHERE user_id = p_user_id;
-    END IF;
-
-    IF p_paid THEN
-        UPDATE users SET balance = balance - p_amount WHERE user_id = p_user_id;
-    END IF;
-
-    SELECT p_expense_id AS expense_id;
-END$$
-DELIMITER ;
-
-
-
--- Trigger to update balance after updating an expense
-DELIMITER //
-CREATE TRIGGER after_update_expense_balance
-AFTER UPDATE ON expenses
-FOR EACH ROW
-BEGIN
-    -- Check if the amount was updated and paid status changed from false to true
-    IF NEW.amount != OLD.amount AND OLD.paid = 0 AND NEW.paid = 1 THEN
-        -- Subtract the expense amount from the user's balance
-        UPDATE users SET balance = balance - NEW.amount WHERE user_id = NEW.user_id;
-    END IF;
-END;
-//
-DELIMITER ;
-
-
-DELIMITER $$
-CREATE PROCEDURE delete_expense(IN p_expense_id INT)
-BEGIN
-    -- Declare the variables at the beginning
-    DECLARE expense_amount DECIMAL(10, 2);
-    DECLARE is_expense_paid BOOLEAN;
-    DECLARE user_id INT;
-
-    -- Retrieve the amount, paid status, and user_id of the expense
-    SELECT amount, paid, user_id INTO expense_amount, is_expense_paid, user_id FROM expenses WHERE expense_id = p_expense_id;
-
-    -- Delete the expense
-    DELETE FROM expenses WHERE expense_id = p_expense_id;
-
-    -- If the expense is paid, subtract the amount from the user's balance
-    IF is_expense_paid THEN
-        -- Retrieve the current user balance
-        UPDATE users SET balance = balance + expense_amount WHERE user_id = user_id;
-    END IF;
-
-    SELECT p_expense_id AS expense_id;
-END$$
-DELIMITER ;
-
-
-DELIMITER //
-CREATE TRIGGER after_delete_expense
-AFTER DELETE ON expenses
-FOR EACH ROW
-BEGIN
-    -- Check if the expense was paid
-    IF OLD.paid = 1 THEN
-        -- Retrieve the current user balance
-        SELECT balance INTO @user_balance FROM users WHERE user_id = OLD.user_id;
-
-        -- Add the expense amount back to the user's balance
-        UPDATE users SET balance = @user_balance + OLD.amount WHERE user_id = OLD.user_id;
-    END IF;
-END;
-//
-DELIMITER ;
-
-
-
-
-
--- View to get users with their expenses
-CREATE VIEW users_with_expenses AS
-SELECT
-    u.user_id AS user_id,
-    u.full_name,
-    u.age,
-    u.email,
-    u.username,
-    u.password,
-    u.balance,
-    e.expense_id,
-    e.amount AS expense_amount,
-    e.description AS expense_description,
-    e.frequency AS expense_frequency,
-    e.paid AS expense_paid
-FROM
-    users u
-INNER JOIN expenses e ON u.user_id = e.user_id;

@@ -142,7 +142,6 @@ function Savings() {
         ...updatedSavingsData,
       })
       .then(() => {
-        alert("Savings updated.");
         fetchSavings();
       })
       .catch((error) => {
@@ -166,7 +165,6 @@ function Savings() {
       .catch((error) => {
         console.log(error);
       });
-    alert("Savings deleted.");
     closePopup();
   };
 

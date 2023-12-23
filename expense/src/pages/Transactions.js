@@ -87,7 +87,6 @@ function Transactions() {
       });
 
     setTransactionData(formData);
-    alert("Transaction added.");
     closePopup();
   };
 
@@ -155,7 +154,6 @@ function Transactions() {
       .catch((error) => {
         console.log(error);
       });
-    alert("Transaction updated");
     closePopup();
   };
 
@@ -176,7 +174,6 @@ function Transactions() {
       .catch((error) => {
         console.log(error);
       });
-    alert("Transaction deleted.");
     closePopup();
   };
 

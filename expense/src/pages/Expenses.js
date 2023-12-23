@@ -108,8 +108,13 @@ function Expenses() {
           };
         });
 
-        const unpaidExpenses = expensesData.filter((expense) => expense.paid === 0);
-        const sum = unpaidExpenses.reduce((acc, expense) => acc + expense.amount, 0);
+        const unpaidExpenses = expensesData.filter(
+          (expense) => expense.paid === 0
+        );
+        const sum = unpaidExpenses.reduce(
+          (acc, expense) => acc + expense.amount,
+          0
+        );
         setUnpaidExpensesCount(sum);
         setExpenses(expensesData);
       })
@@ -117,7 +122,6 @@ function Expenses() {
         console.log(error);
       });
   };
-
 
   // Create expenses data
   const handleCreate = () => {
@@ -150,7 +154,6 @@ function Expenses() {
         ...updatedExpensesData,
       })
       .then(() => {
-        alert("Expenses updated.");
         fetchExpenses();
       })
       .catch((error) => {
@@ -170,7 +173,6 @@ function Expenses() {
     axios
       .delete(`http://localhost:5000/expenses/${expense.expense_id}`)
       .then(() => {
-        alert("Expense deleted.");
         fetchExpenses();
       })
       .catch((error) => {
@@ -197,7 +199,9 @@ function Expenses() {
             <div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
               {unpaidExpensesCount > 0 ? (
                 <>
-                  <div className="text-xs font-normal">Total Unpaid Expenses</div>
+                  <div className="text-xs font-normal">
+                    Total Unpaid Expenses
+                  </div>
                   <div>
                     <span>Php {Number(unpaidExpensesCount).toFixed(2)}</span>
                   </div>

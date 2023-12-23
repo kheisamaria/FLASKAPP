@@ -1,14 +1,14 @@
 // import "./App.css";
 
-import NavBar from "../components/NavBar";
-import Footer from "../components/Footer";
-import React, { useState, useEffect, useContext } from "react";
-import ShowPopup from "../components/ShowPopupExpenses";
-import ErrorPopup from "../components/ErrorPopup";
-import Header from "../components/Header";
-import DeletePopUp from "../components/DeletePopUp";
 import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../UserContext";
+import DeletePopUp from "../components/DeletePopUp";
+import ErrorPopup from "../components/ErrorPopup";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import NavBar from "../components/NavBar";
+import ShowPopup from "../components/ShowPopupExpenses";
 import UpdatePopupExpenses from "../components/UpdatePopupExpenses";
 
 // naay error sa pagcount sa unpaid expenses
@@ -101,17 +101,23 @@ function Expenses() {
     axios
       .get(`http://localhost:5000/expenses/user/${user}`)
       .then((response) => {
-        setExpenses(response.data);
-        const unpaidCount = expenses.filter(
-          (expense) => expense.paid === false
-        ).length;
-        setUnpaidExpensesCount(unpaidCount);
-        console.log(unpaidExpensesCount);
+        const expensesData = response.data.map((expense) => {
+          return {
+            ...expense,
+            amount: parseFloat(expense.amount),
+          };
+        });
+
+        const unpaidExpenses = expensesData.filter((expense) => expense.paid === 0);
+        const sum = unpaidExpenses.reduce((acc, expense) => acc + expense.amount, 0);
+        setUnpaidExpensesCount(sum);
+        setExpenses(expensesData);
       })
       .catch((error) => {
         console.log(error);
       });
   };
+
 
   // Create expenses data
   const handleCreate = () => {
@@ -191,9 +197,9 @@ function Expenses() {
             <div className="h-full w-fit flex flex-col items-start justify-end text-yellow-500 font-bold text-3xl">
               {unpaidExpensesCount > 0 ? (
                 <>
-                  <div className="text-xs font-normal">Unpaid Expenses</div>
+                  <div className="text-xs font-normal">Total Unpaid Expenses</div>
                   <div>
-                    <span>{unpaidExpensesCount}</span> Expenses to Pay
+                    <span>Php {Number(unpaidExpensesCount).toFixed(2)}</span>
                   </div>
                 </>
               ) : (

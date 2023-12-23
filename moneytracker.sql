@@ -391,10 +391,10 @@ BEGIN
     -- Declare the variables at the beginning
     DECLARE expense_amount DECIMAL(10, 2);
     DECLARE is_expense_paid BOOLEAN;
-    DECLARE user_balance DECIMAL(10, 2);
+    DECLARE user_id INT;
 
-    -- Retrieve the amount and paid status of the expense
-    SELECT amount, paid INTO expense_amount, is_expense_paid FROM expenses WHERE expense_id = p_expense_id;
+    -- Retrieve the amount, paid status, and user_id of the expense
+    SELECT amount, paid, user_id INTO expense_amount, is_expense_paid, user_id FROM expenses WHERE expense_id = p_expense_id;
 
     -- Delete the expense
     DELETE FROM expenses WHERE expense_id = p_expense_id;
@@ -402,14 +402,13 @@ BEGIN
     -- If the expense is paid, subtract the amount from the user's balance
     IF is_expense_paid THEN
         -- Retrieve the current user balance
-        SELECT balance INTO user_balance FROM users WHERE user_id = OLD.user_id;
-        -- Add the expense amount back to the user's balance
-        UPDATE users SET balance = user_balance + expense_amount WHERE user_id = OLD.user_id;
+        UPDATE users SET balance = balance + expense_amount WHERE user_id = user_id;
     END IF;
 
     SELECT p_expense_id AS expense_id;
 END$$
 DELIMITER ;
+
 
 DELIMITER //
 CREATE TRIGGER after_delete_expense
